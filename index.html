@@ -1,449 +1,718 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Informe Técnico - PWA Offline</title>
-<link rel="manifest" href="manifest.json">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Orden de Servicio Técnico - Realtech SpA</title>
+<link rel="icon" type="image/png" href="logo_realtech.png">
+
 <style>
-  body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:16px;background:#f6f7fb}
-  .app{max-width:900px;margin:0 auto;background:#fff;padding:16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
-  h1{margin:0 0 12px;font-size:20px;color:#073b6b}
-  label{display:block;margin-top:8px;font-weight:700;font-size:12px;color:#0a2340}
-  input[type=text], input[type=date], input[type=tel], select, textarea{width:100%;padding:8px;border:1px solid #d1d8e0;border-radius:6px;margin-top:4px;box-sizing:border-box}
-  .row{display:flex;gap:8px}
-  .col{flex:1}
-  .small{flex:0 0 120px}
-  button{background:#0a66c2;color:white;border:none;padding:10px 12px;border-radius:6px;cursor:pointer;margin-top:12px}
-  .secondary{background:#6b7280}
-  .cards{display:grid;grid-template-columns:1fr 280px;gap:12px}
-  .pending{background:#fff;padding:10px;border-radius:6px;border:1px solid #e6eef8;min-height:120px}
-  .mini{font-size:12px;color:#4b5563}
-  canvas{border:1px dashed #cbd5e1;border-radius:6px;touch-action:none;width:100%;height:140px}
-  .images-preview img{max-width:100%;height:auto;margin-top:8px;border-radius:6px;border:1px solid #e2e8f0}
-  .flex-between{display:flex;justify-content:space-between;align-items:center}
-  .badge{background:#e6f0ff;color:#084b9a;padding:6px 8px;border-radius:999px;font-weight:700}
+  /* --- ESTILOS BASE --- */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0; 
+    margin: 0;
+    padding: 20px 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .documento {
+    background-color: white;
+    width: 95%;
+    max-width: 21.59cm;
+    min-height: 27.94cm;
+    padding: 0.8cm 1cm;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    overflow: visible;
+  }
+
+  /* Header */
+  .header {
+    border-bottom: 2px solid #004a99;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .logo-area { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-grow: 1; }
+  .logo img { width: 75px; display: block; } 
+  
+  .empresa-info { font-size: 9px; color: #000; line-height: 1.2; }
+  .empresa-nombre { font-size: 13px; font-weight: bold; color: #004a99; display: block; }
+  .titulo-doc { text-align: right; }
+  .titulo-doc h1 { font-size: 16px; margin: 0; color: #004a99; }
+  .numero-cotizacion { font-size: 12px; font-weight: bold; color: #004a99; margin-bottom: 2px; }
+  .fecha-box { font-size: 9px; margin-top: 3px; font-weight: bold; color: #333; }
+  .fecha-box input {
+    border: none; background: transparent; font-size: 9px; font-weight: bold; 
+    color: #333; padding: 0; width: 90px; outline: none;
+  }
+
+  /* Títulos de Sección */
+  h2 {
+    font-size: 9px; background: #f0f0f0; padding: 3px 6px;
+    border-left: 3px solid #004a99; text-transform: uppercase;
+    color: #222; margin-bottom: 5px; margin-top: 8px;
+  }
+
+  /* Grid Cliente */
+  .grid-cliente {
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 4px 8px; 
+    margin-bottom: 8px;
+  }
+  .full-width { grid-column: 1 / -1; }
+  .two-col { grid-column: span 2; }
+
+  label {
+    display: block; font-size: 7px; font-weight: bold;
+    color: #004a99; margin-bottom: 1px; text-transform: uppercase;
+  }
+  input, textarea, select {
+    width: 100%; border: none; border-bottom: 1px solid #ccc;
+    padding: 2px 0; font-size: 10px; outline: none; background: transparent;
+  }
+
+  /* Secciones Expandibles */
+  .expandible-section {
+    margin-bottom: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .expandible-header {
+    background: #f5f5f5;
+    padding: 5px 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9px;
+    font-weight: bold;
+    color: #004a99;
+  }
+  .expandible-header:hover { background: #e8e8e8; }
+  .expandible-content {
+    padding: 8px;
+    display: none;
+    background: #fafafa;
+  }
+  .expandible-content.active { display: block; }
+  
+  .repuesto-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 30px;
+    gap: 5px;
+    margin-bottom: 5px;
+    align-items: end;
+  }
+  
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+  }
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+  }
+  .checkbox-item input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+  }
+  
+  .trabajo-descripcion {
+    grid-column: 1 / -1;
+    background: white;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    min-height: 40px;
+    font-size: 9px;
+    margin-top: 5px;
+    color: #999;
+  }
+
+  /* Footer */
+  .footer-section { flex-shrink: 0; margin-top: auto; }
+  .obs-section textarea { min-height: 60px; font-size: 9px; resize: none; overflow: hidden; }
+
+  /* Botones */
+  .botonera { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 8px; z-index: 100; }
+  button { 
+    padding: 8px 12px; cursor: pointer; border: none; border-radius: 4px; 
+    font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+    font-size: 11px;
+  }
+  .btn-azul { background: #004a99; color: white; }
+  .btn-gris { background: white; color: #333; }
+  .btn-guardar { background: #38a169; color: white; }
+  .btn-borrar { 
+    background: #cc0000; color: white; width: 20px; height: 20px; 
+    padding: 0; border-radius: 3px; font-size: 10px; 
+  }
+
+  /* Notificación */
+  .notificacion {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    font-weight: bold;
+    z-index: 1000;
+    display: none;
+    animation: slideIn 0.3s ease-out;
+  }
+  .notificacion.exito { background: #38a169; color: white; }
+  .notificacion.error { background: #cc0000; color: white; }
+  
+  @keyframes slideIn {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  /* Responsive */
+  @media (min-width: 769px) {
+    .documento {
+      padding: 0.8cm 1.2cm; 
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    .logo img { width: 85px; }
+    .empresa-info { font-size: 10px; }
+  }
+
+  /* Impresión */
+  @media print {
+    @page { margin: 0.5cm !important; size: letter; }
+    body { margin: 0; padding: 0; background: white; }
+    
+    .documento {
+      width: 100%; 
+      box-shadow: none;
+      padding: 0.5cm 0.8cm !important; 
+      margin: 0;
+    }
+
+    .botonera, .btn-borrar, .notificacion { display: none !important; } 
+    
+    input, textarea, td input, select, .fecha-box input {
+      background: transparent !important; border: none !important; 
+      padding: 0 !important;
+    }
+    input::placeholder { color: transparent; }
+    h2, th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .expandible-content { display: block !important; }
+    .toggle-icon { display: none; }
+  }
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="flex-between">
-    <h1>Informe Técnico — Inspector de Impresoras</h1>
-    <div>
-      <span class="badge" id="statusBadge">Estado: Online?</span>
-    </div>
-  </div>
 
-  <!-- FORM -->
-  <form id="informeForm">
-    <label>Fecha</label>
-    <input type="date" id="fecha" required>
+<div class="notificacion" id="notificacion"></div>
 
-    <div class="row">
-      <div class="col">
-        <label>Cliente</label>
-        <input type="text" id="cliente" placeholder="Nombre del cliente" required>
-      </div>
-      <div class="col">
-        <label>Departamento</label>
-        <input type="text" id="departamento" placeholder="Depto / área">
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col">
-        <label>Nombre de contacto</label>
-        <input type="text" id="contacto">
-      </div>
-      <div class="col">
-        <label>Dirección</label>
-        <input type="text" id="direccion">
-      </div>
-      <div class="col">
-        <label>Ciudad</label>
-        <input type="text" id="ciudad">
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="small">
-        <label>RUT</label>
-        <input type="text" id="rut">
-      </div>
-      <div class="col">
-        <label>Teléfono</label>
-        <input type="tel" id="telefono">
-      </div>
-      <div class="small">
-        <label>Equipo (Propio/Arriendo)</label>
-        <select id="propiedad">
-          <option value="propio">Propio</option>
-          <option value="arriendo">Arriendo</option>
-        </select>
-      </div>
-    </div>
-
-    <hr>
-
-    <div class="row">
-      <div class="col">
-        <label>Marca</label><input type="text" id="marca">
-      </div>
-      <div class="col">
-        <label>Modelo</label><input type="text" id="modelo">
-      </div>
-      <div class="col">
-        <label>Serie</label><input type="text" id="serie">
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col">
-        <label>Contador B/N</label><input type="text" id="contadorBN">
-      </div>
-      <div class="col">
-        <label>Contador Color</label><input type="text" id="contadorColor">
-      </div>
-    </div>
-
-    <label>Tipo de servicio</label>
-    <select id="tipoServicio">
-      <option value="mantencion">Mantención</option>
-      <option value="reparacion">Reparación</option>
-      <option value="presupuesto">Presupuesto</option>
-      <option value="instalacion">Instalación</option>
-      <option value="retiro">Retiro</option>
-      <option value="configuracion">Configuración</option>
-    </select>
-
-    <label>Observaciones / Diagnóstico</label>
-    <textarea id="observaciones" rows="4"></textarea>
-
-    <label>Repuestos / Acciones realizadas (una por línea)</label>
-    <textarea id="repuestos" rows="3" placeholder="Ej: Fusor - reemplazado"></textarea>
-
-    <!-- Fotos -->
-    <label>Fotos (hasta 3)</label>
-    <input type="file" id="fotos" accept="image/*" multiple>
-    <div class="images-preview" id="imagesPreview"></div>
-
-    <!-- Firmas -->
-    <div class="row" style="margin-top:12px">
-      <div class="col">
-        <label>Nombre técnico</label>
-        <input type="text" id="nombreTecnico" required>
-        <label style="margin-top:8px">Firma técnico</label>
-        <canvas id="firmaTecnico"></canvas>
-        <button type="button" class="secondary" id="limpiarFirmaTec">Limpiar firma técnico</button>
-      </div>
-
-      <div class="col">
-        <label>Nombre cliente</label>
-        <input type="text" id="nombreCliente" required>
-        <label style="margin-top:8px">Firma cliente</label>
-        <canvas id="firmaCliente"></canvas>
-        <button type="button" class="secondary" id="limpiarFirmaCli">Limpiar firma cliente</button>
-      </div>
-    </div>
-
-    <div style="margin-top:12px">
-      <button type="button" id="guardarLocal">💾 Guardar local (offline)</button>
-      <button type="button" id="sincronizarNow">⤴️ Sincronizar ahora</button>
-      <button type="reset" class="secondary">Limpiar formulario</button>
-    </div>
-  </form>
-
-  <hr>
-
-  <div class="cards">
-    <div>
-      <h3>Informes pendientes</h3>
-      <div id="listaPendientes" class="pending mini">Cargando...</div>
-    </div>
-
-    <div>
-      <h3>Acciones</h3>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button id="forzarSync">Forzar sincronización de todos</button>
-        <button id="limpiarPendientes" class="secondary">Eliminar todos los pendientes (local)</button>
-        <div class="mini" style="margin-top:8px">Detecta conexión: <strong id="onlineState">?</strong></div>
-      </div>
-    </div>
-  </div>
+<div class="botonera">
+  <button class="btn-gris" onclick="agregarRepuestoInstalado()">+ Rep. Instalado</button>
+  <button class="btn-gris" onclick="agregarRepuestoRetirado()">+ Rep. Retirado</button>
+  <button class="btn-guardar" onclick="guardarOrden()">💾 Guardar</button>
+  <button class="btn-azul" onclick="window.print()">🖨️ Imprimir</button>
 </div>
 
+<div class="documento">
+  
+  <div class="header">
+    <div class="logo-area">
+      <div class="logo">
+        <img src="logo_realtech.png" alt="Logo" onerror="this.style.display='none'">
+      </div>
+      <div class="empresa-info">
+        <span class="empresa-nombre">Realtech SpA</span>
+        <strong>RUT: 77.651.114-5</strong><br>
+        Arturo Prat 780 of 203A, Temuco<br>
+        realtech.spa@gmail.com | +56 9 3957 3029
+      </div>
+    </div>
+    <div class="titulo-doc">
+      <div class="numero-cotizacion" id="numeroCotizacion">N° ---</div>
+      <h1>Orden de Servicio Técnico</h1>
+      <div class="fecha-box">
+        Emisión: <input type="date" id="fechaInput">
+      </div>
+    </div>
+  </div>
+
+  <h2>Información del Cliente y Equipo</h2>
+  <div class="grid-cliente">
+    <div class="campo two-col">
+      <label>Cliente / Empresa</label>
+      <input type="text" id="clienteNombre" list="clientes-list" placeholder="Nombre del cliente..." onchange="autocompletarCliente()">
+    </div>
+    <div class="campo">
+      <label>RUT</label>
+      <input type="text" id="clienteRut" placeholder="XX.XXX.XXX-X" oninput="formatearRut(this)">
+    </div>
+    <div class="campo">
+      <label>Dirección</label>
+      <input type="text" id="clienteDireccion" placeholder="Dirección">
+    </div>
+    <div class="campo">
+      <label>Ciudad</label>
+      <input type="text" id="clienteCiudad" placeholder="Ciudad">
+    </div>
+    <div class="campo">
+      <label>Contacto</label>
+      <input type="text" id="clienteContacto" placeholder="Atención a...">
+    </div>
+    <div class="campo">
+      <label>Email</label>
+      <input type="text" id="clienteEmail" placeholder="correo@ejemplo.com">
+    </div>
+    <div class="campo">
+      <label>Teléfono</label>
+      <input type="text" id="clienteTelefono" placeholder="+56 9...">
+    </div>
+    <div class="campo">
+      <label>Marca Equipo</label>
+      <input type="text" id="equipoMarca" list="marcas-list" placeholder="Seleccionar marca..." onchange="guardarNuevaMarca(this.value)">
+    </div>
+    <div class="campo">
+      <label>Modelo</label>
+      <input type="text" id="equipoModelo" list="modelos-list" placeholder="Modelo" onchange="guardarNuevoModelo(this.value)">
+    </div>
+    <div class="campo">
+      <label>Serie</label>
+      <input type="text" id="equipoSerie" placeholder="N° de serie">
+    </div>
+  </div>
+
+  <!-- Repuestos Instalados -->
+  <div class="expandible-section">
+    <div class="expandible-header" onclick="toggleExpandible(this)">
+      <span>📦 Repuestos Instalados</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="expandible-content">
+      <div id="repuestosInstaladosContainer">
+        <div class="repuesto-row">
+          <div>
+            <label>Repuesto</label>
+            <input type="text" class="repuesto-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)">
+          </div>
+          <div>
+            <label>Serie (opcional)</label>
+            <input type="text" class="repuesto-serie" placeholder="N° Serie">
+          </div>
+          <div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Repuestos Retirados -->
+  <div class="expandible-section">
+    <div class="expandible-header" onclick="toggleExpandible(this)">
+      <span>🔧 Repuestos Retirados</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="expandible-content">
+      <div id="repuestosRetiradosContainer">
+        <div class="repuesto-row">
+          <div>
+            <label>Repuesto</label>
+            <input type="text" class="repuesto-retirado-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)">
+          </div>
+          <div>
+            <label>Serie (opcional)</label>
+            <input type="text" class="repuesto-retirado-serie" placeholder="N° Serie">
+          </div>
+          <div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trabajo Realizado -->
+  <div class="expandible-section">
+    <div class="expandible-header" onclick="toggleExpandible(this)">
+      <span>🛠️ Trabajo Realizado</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="expandible-content">
+      <div class="checkbox-grid" id="trabajosCheckboxContainer">
+        <!-- Se cargarán dinámicamente desde Google Sheets -->
+      </div>
+      <div class="trabajo-descripcion" id="trabajoDescripcion">
+        No hay trabajos seleccionados
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-section">
+    <h2>Observaciones Adicionales</h2>
+    <div class="obs-section">
+      <textarea id="obs" placeholder="Detalles de la atención que no están registrados en los menús desplegables..."></textarea>
+    </div>
+  </div>
+
+</div>
+
+<datalist id="repuestos-list"></datalist>
+<datalist id="clientes-list"></datalist>
+<datalist id="marcas-list"></datalist>
+<datalist id="modelos-list"></datalist>
+
 <script>
-/* ===============================
-  CONFIG: URL de tu Apps Script
-  Reemplaza por tu endpoint web app (doPost)
-=============================== */
-const APPS_SCRIPT_URL = 'TU_APPS_SCRIPT_URL_AQUI'; // <<-- pega tu URL aquí
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwt-64kJIZop4RVHvai9yx0lsgBgSm7MnmExHKXRawMY_MfKOeDz2HV8m4dU_KE3yy8Bw/exec';
+  
+  let cachedClients = [];
+  let cachedMarcas = [];
+  let cachedModelos = [];
+  let cachedRepuestos = [];
+  let cachedServicios = [];
+  let numeroActual = 0;
 
-/* ---------- Inicialización UI ---------- */
-const statusBadge = document.getElementById('statusBadge');
-const onlineState = document.getElementById('onlineState');
-function updateOnlineUI(){
-  const ok = navigator.onLine;
-  onlineState.textContent = ok ? 'Online' : 'Offline';
-  statusBadge.textContent = 'Estado: ' + (ok ? 'Online' : 'Offline');
-  statusBadge.style.background = ok ? '#e6f7ff' : '#fff3cd';
-}
-window.addEventListener('online', () => { updateOnlineUI(); sincronizarPendientes(); });
-window.addEventListener('offline', updateOnlineUI);
-updateOnlineUI();
-
-/* ---------- IndexedDB básico ---------- */
-const DB_NAME = 'informes_db_v1';
-const STORE_NAME = 'informes';
-let db;
-function openDB(){ return new Promise((res,rej)=>{
-  const req = indexedDB.open(DB_NAME,1);
-  req.onupgradeneeded = e => {
-    const idb = e.target.result;
-    if(!idb.objectStoreNames.contains(STORE_NAME)){
-      idb.createObjectStore(STORE_NAME,{keyPath:'id'});
-    }
-  };
-  req.onsuccess = e => { db = e.target.result; res(db); };
-  req.onerror = e => rej(e);
-}); }
-
-function putInforme(obj){ return new Promise(async (res,rej)=>{
-  if(!db) await openDB();
-  const tx = db.transaction(STORE_NAME,'readwrite');
-  tx.objectStore(STORE_NAME).put(obj);
-  tx.oncomplete = ()=> res(true);
-  tx.onerror = e=> rej(e);
-}); }
-
-function getAllInformes(){ return new Promise(async (res,rej)=>{
-  if(!db) await openDB();
-  const tx = db.transaction(STORE_NAME,'readonly');
-  const req = tx.objectStore(STORE_NAME).getAll();
-  req.onsuccess = ()=> res(req.result || []);
-  req.onerror = e => rej(e);
-}); }
-
-function deleteInforme(id){ return new Promise(async (res,rej)=>{
-  if(!db) await openDB();
-  const tx = db.transaction(STORE_NAME,'readwrite');
-  tx.objectStore(STORE_NAME).delete(id);
-  tx.oncomplete = ()=> res(true);
-  tx.onerror = e=> rej(e);
-}); }
-
-/* ---------- Form helpers ---------- */
-const form = document.getElementById('informeForm');
-const inputFotos = document.getElementById('fotos');
-const imagesPreview = document.getElementById('imagesPreview');
-const MAX_FOTOS = 3;
-
-inputFotos.addEventListener('change', async (ev)=>{
-  imagesPreview.innerHTML = '';
-  const files = Array.from(ev.target.files).slice(0,MAX_FOTOS);
-  for(const f of files){
-    const imgURL = await fileToDataURL(f);
-    const img = document.createElement('img'); img.src = imgURL;
-    imagesPreview.appendChild(img);
-  }
-});
-
-/* ---------- Canvas firma ---------- */
-function setupCanvas(id){
-  const c = document.getElementById(id);
-  const ctx = c.getContext('2d');
-  // tamaño responsive
-  function resize(){ const ratio = window.devicePixelRatio || 1; c.width = c.clientWidth*ratio; c.height = 140*ratio; ctx.scale(ratio,ratio); ctx.lineWidth = 2; ctx.lineCap='round'; }
-  resize(); window.addEventListener('resize', resize);
-  let drawing=false;
-  function start(e){ drawing=true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x,p.y); e.preventDefault(); }
-  function move(e){ if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); e.preventDefault(); }
-  function end(){ drawing=false; }
-  function getPos(e){
-    if(e.touches && e.touches[0]) e = e.touches[0];
-    const rect = c.getBoundingClientRect();
-    return { x: (e.clientX-rect.left), y: (e.clientY-rect.top) };
-  }
-  c.addEventListener('mousedown', start); c.addEventListener('mousemove', move); c.addEventListener('mouseup', end); c.addEventListener('mouseout', end);
-  c.addEventListener('touchstart', start); c.addEventListener('touchmove', move); c.addEventListener('touchend', end);
-  return {
-    clear: ()=> { ctx.clearRect(0,0,c.width,c.height); },
-    toDataURL: ()=> c.toDataURL('image/png')
-  };
-}
-const firmaTecnico = setupCanvas('firmaTecnico');
-const firmaCliente = setupCanvas('firmaCliente');
-document.getElementById('limpiarFirmaTec').onclick = ()=> firmaTecnico.clear();
-document.getElementById('limpiarFirmaCli').onclick = ()=> firmaCliente.clear();
-
-/* ---------- util: file -> dataURL ---------- */
-function fileToDataURL(file){ return new Promise((res,rej)=>{
-  const fr = new FileReader();
-  fr.onload = ()=> res(fr.result);
-  fr.onerror = rej;
-  fr.readAsDataURL(file);
-}); }
-
-/* ---------- Guardar local ---------- */
-document.getElementById('guardarLocal').addEventListener('click', async ()=>{
-  // validaciones simples
-  if(!document.getElementById('cliente').value) return alert('Ingresa nombre de cliente');
-  if(!document.getElementById('nombreTecnico').value) return alert('Ingresa nombre técnico');
-  if(!document.getElementById('nombreCliente').value) return alert('Ingresa nombre cliente');
-
-  // construir objeto
-  const id = 'inf_' + Date.now();
-  const files = Array.from(inputFotos.files).slice(0,MAX_FOTOS);
-  const fotosData = [];
-  for(const f of files) fotosData.push(await fileToDataURL(f));
-
-  const informe = {
-    id,
-    fecha: document.getElementById('fecha').value || new Date().toISOString().slice(0,10),
-    cliente: document.getElementById('cliente').value,
-    departamento: document.getElementById('departamento').value,
-    contacto: document.getElementById('contacto').value,
-    direccion: document.getElementById('direccion').value,
-    ciudad: document.getElementById('ciudad').value,
-    rut: document.getElementById('rut').value,
-    telefono: document.getElementById('telefono').value,
-    propiedad: document.getElementById('propiedad').value,
-    marca: document.getElementById('marca').value,
-    modelo: document.getElementById('modelo').value,
-    serie: document.getElementById('serie').value,
-    contadorBN: document.getElementById('contadorBN').value,
-    contadorColor: document.getElementById('contadorColor').value,
-    tipoServicio: document.getElementById('tipoServicio').value,
-    observaciones: document.getElementById('observaciones').value,
-    repuestos: document.getElementById('repuestos').value,
-    nombreTecnico: document.getElementById('nombreTecnico').value,
-    firmaTecnico: firmaTecnico.toDataURL(),
-    nombreCliente: document.getElementById('nombreCliente').value,
-    firmaCliente: firmaCliente.toDataURL(),
-    fotos: fotosData,
-    estado: 'pendiente'
-  };
-
-  await putInforme(informe);
-  mostrarNotificacion('Guardado localmente ✔');
-  refreshLista();
-  form.reset();
-  imagesPreview.innerHTML='';
-  firmaTecnico.clear(); firmaCliente.clear();
-});
-
-/* ---------- Mostrar lista pendientes ---------- */
-async function refreshLista(){
-  const arr = await getAllInformes();
-  const cont = document.getElementById('listaPendientes');
-  if(arr.length===0){ cont.innerHTML = '<div class="mini">No hay informes pendientes</div>'; return; }
-  cont.innerHTML = '';
-  arr.forEach(i=>{
-    const div = document.createElement('div');
-    div.style.borderBottom = '1px solid #eef2f7';
-    div.style.padding = '8px 0';
-    div.innerHTML = `<strong>${i.cliente}</strong> <div class="mini">${i.fecha} · ${i.tipoServicio} · ${i.estado}</div>
-      <div style="margin-top:6px">
-        <button data-id="${i.id}" class="btn-send">Enviar</button>
-        <button data-id="${i.id}" class="btn-delete secondary">Eliminar</button>
-      </div>`;
-    cont.appendChild(div);
-  });
-
-  // attach events
-  cont.querySelectorAll('.btn-send').forEach(b=> b.onclick = async e=>{
-    const id = e.target.dataset.id;
-    const all = await getAllInformes();
-    const item = all.find(x=>x.id===id);
-    if(item) await enviarInforme(item);
-  });
-  cont.querySelectorAll('.btn-delete').forEach(b=> b.onclick = async e=>{
-    if(!confirm('Eliminar este informe localmente?')) return;
-    await deleteInforme(e.target.dataset.id);
-    refreshLista();
-  });
-}
-refreshLista();
-
-/* ---------- Sincronización ---------- */
-async function sincronizarPendientes(){
-  if(!navigator.onLine) return;
-  const pendientes = await getAllInformes();
-  for(const p of pendientes){
-    if(p.estado === 'pendiente') {
-      try {
-        await enviarInforme(p);
-      } catch(err){
-        console.error('Error al sincronizar', err);
-      }
-    }
-  }
-  refreshLista();
-}
-
-document.getElementById('forzarSync').onclick = sincronizarPendientes;
-document.getElementById('sincronizarNow').onclick = async ()=>{
-  const all = await getAllInformes();
-  if(all.length===0) return alert('No hay pendientes');
-  for(const i of all) await enviarInforme(i);
-};
-
-/* ---------- Envío a Apps Script (doPost) ---------- */
-async function enviarInforme(informe){
-  // marca como procesando localmente
-  informe.estado = 'enviando';
-  await putInforme(informe);
-  refreshLista();
-
-  // prepara payload: enviamos todo, fotos como DataURL
-  const payload = { informe };
-
-  // POST
-  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('TU_APPS_SCRIPT_URL_AQUI')) {
-    alert('Debes configurar APPS_SCRIPT_URL en el archivo (Apps Script URL).');
-    throw new Error('No endpoint configurado');
-  }
-
-  const res = await fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  if(!res.ok) throw new Error('Error red');
-
-  const data = await res.json();
-  if(data && data.status === 'ok'){
-    // marca sincronizado
-    await deleteInforme(informe.id);
-    mostrarNotificacion('Sincronizado: ' + informe.cliente);
-    refreshLista();
-  } else {
-    // si la API devolvió error, dejar como pendiente y mostrar
-    informe.estado = 'pendiente';
-    await putInforme(informe);
-    refreshLista();
-    throw new Error('API error: ' + JSON.stringify(data));
-  }
-}
-
-/* ---------- util: notificación visual ---------- */
-function mostrarNotificacion(msg){
-  statusBadge.textContent = msg;
-  setTimeout(updateOnlineUI, 3000);
-}
-
-/* ---------- Init: fecha por defecto y registrar SW ---------- */
-document.addEventListener('DOMContentLoaded', ()=>{
+  // Configuración inicial
   const hoy = new Date();
-  const yyyy = hoy.getFullYear(); const mm = String(hoy.getMonth()+1).padStart(2,'0'); const dd = String(hoy.getDate()).padStart(2,'0');
-  document.getElementById('fecha').value = `${yyyy}-${mm}-${dd}`;
-  openDB().then(refreshLista);
+  const fechaDefault = hoy.toISOString().split('T')[0];
+  document.getElementById('fechaInput').value = fechaDefault;
 
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('sw.js').then(()=> console.log('SW registrado')).catch(err=>console.warn('SW failed',err));
+  // Cargar datos iniciales
+  window.addEventListener('DOMContentLoaded', async () => {
+    await cargarDatosIniciales();
+  });
+
+  async function cargarDatosIniciales() {
+    try {
+      const response = await fetch(`${APPS_SCRIPT_URL}?action=loadData`);
+      const data = await response.json();
+      
+      if (data.success) {
+        cachedClients = data.clientes || [];
+        cachedMarcas = data.marcas || [];
+        cachedModelos = data.modelos || [];
+        cachedRepuestos = data.repuestos || [];
+        cachedServicios = data.servicios || [];
+        numeroActual = data.correlativo || 1;
+        
+        actualizarDataLists();
+        cargarServiciosCheckboxes();
+        document.getElementById('numeroCotizacion').textContent = `N° ${String(numeroActual).padStart(4, '0')}`;
+      }
+    } catch (error) {
+      console.error('Error cargando datos:', error);
+      mostrarNotificacion('⚠️ Error al cargar datos del servidor', 'error');
+    }
   }
-});
+
+  function actualizarDataLists() {
+    // Clientes
+    const clientesList = document.getElementById('clientes-list');
+    clientesList.innerHTML = cachedClients.map(c => `<option value="${c.nombre}">`).join('');
+    
+    // Marcas
+    const marcasList = document.getElementById('marcas-list');
+    marcasList.innerHTML = cachedMarcas.map(m => `<option value="${m}">`).join('');
+    
+    // Modelos
+    const modelosList = document.getElementById('modelos-list');
+    modelosList.innerHTML = cachedModelos.map(m => `<option value="${m}">`).join('');
+    
+    // Repuestos
+    const repuestosList = document.getElementById('repuestos-list');
+    repuestosList.innerHTML = cachedRepuestos.map(r => `<option value="${r}">`).join('');
+  }
+
+  function cargarServiciosCheckboxes() {
+    const container = document.getElementById('trabajosCheckboxContainer');
+    container.innerHTML = '';
+    
+    cachedServicios.forEach((servicio, index) => {
+      const div = document.createElement('div');
+      div.className = 'checkbox-item';
+      div.innerHTML = `
+        <input type="checkbox" id="trabajo${index}" value="${servicio}" onchange="actualizarTrabajoRealizado()">
+        <label for="trabajo${index}" style="text-transform: none; font-weight: normal;">${servicio}</label>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function autocompletarCliente() {
+    const nombreInput = document.getElementById('clienteNombre').value;
+    const cliente = cachedClients.find(c => c.nombre === nombreInput);
+    
+    if (cliente) {
+      document.getElementById('clienteRut').value = cliente.rut || '';
+      document.getElementById('clienteDireccion').value = cliente.direccion || '';
+      document.getElementById('clienteCiudad').value = cliente.ciudad || '';
+      document.getElementById('clienteContacto').value = cliente.contacto || '';
+      document.getElementById('clienteEmail').value = cliente.email || '';
+      document.getElementById('clienteTelefono').value = cliente.telefono || '';
+    }
+  }
+
+  async function guardarNuevoCliente(clienteData) {
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'addCliente',
+          data: clienteData
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        cachedClients.push(clienteData);
+        actualizarDataLists();
+      }
+    } catch (error) {
+      console.error('Error guardando cliente:', error);
+    }
+  }
+
+  async function guardarNuevaMarca(marca) {
+    if (!marca || cachedMarcas.includes(marca)) return;
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'addMarca',
+          data: marca
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        cachedMarcas.push(marca);
+        actualizarDataLists();
+      }
+    } catch (error) {
+      console.error('Error guardando marca:', error);
+    }
+  }
+
+  async function guardarNuevoModelo(modelo) {
+    if (!modelo || cachedModelos.includes(modelo)) return;
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'addModelo',
+          data: modelo
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        cachedModelos.push(modelo);
+        actualizarDataLists();
+      }
+    } catch (error) {
+      console.error('Error guardando modelo:', error);
+    }
+  }
+
+  async function guardarNuevoRepuesto(repuesto) {
+    if (!repuesto || cachedRepuestos.includes(repuesto)) return;
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'addRepuesto',
+          data: repuesto
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        cachedRepuestos.push(repuesto);
+        actualizarDataLists();
+      }
+    } catch (error) {
+      console.error('Error guardando repuesto:', error);
+    }
+  }
+
+  function mostrarNotificacion(mensaje, tipo = 'exito') {
+    const notif = document.getElementById('notificacion');
+    notif.textContent = mensaje;
+    notif.className = `notificacion ${tipo}`;
+    notif.style.display = 'block';
+    setTimeout(() => notif.style.display = 'none', 4000);
+  }
+
+  function formatearRut(input) {
+    let valor = input.value.replace(/[^0-9kK]/g, '');
+    if (valor.length === 0) return;
+    let cuerpo = valor.slice(0, -1).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    let dv = valor.slice(-1).toUpperCase();
+    input.value = cuerpo ? `${cuerpo}-${dv}` : '';
+  }
+
+  function agregarRepuestoInstalado() {
+    const container = document.getElementById('repuestosInstaladosContainer');
+    if (container.querySelectorAll('.repuesto-row').length >= 10) {
+      mostrarNotificacion('⚠️ Máximo 10 repuestos', 'error');
+      return;
+    }
+    const div = document.createElement('div');
+    div.className = 'repuesto-row';
+    div.innerHTML = `
+      <div>
+        <label>Repuesto</label>
+        <input type="text" class="repuesto-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)">
+      </div>
+      <div>
+        <label>Serie (opcional)</label>
+        <input type="text" class="repuesto-serie" placeholder="N° Serie">
+      </div>
+      <button class="btn-borrar" onclick="this.parentElement.remove()">✕</button>
+    `;
+    container.appendChild(div);
+  }
+
+  function agregarRepuestoRetirado() {
+    const container = document.getElementById('repuestosRetiradosContainer');
+    if (container.querySelectorAll('.repuesto-row').length >= 10) {
+      mostrarNotificacion('⚠️ Máximo 10 repuestos', 'error');
+      return;
+    }
+    const div = document.createElement('div');
+    div.className = 'repuesto-row';
+    div.innerHTML = `
+      <div>
+        <label>Repuesto</label>
+        <input type="text" class="repuesto-retirado-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)">
+      </div>
+      <div>
+        <label>Serie (opcional)</label>
+        <input type="text" class="repuesto-retirado-serie" placeholder="N° Serie">
+      </div>
+      <button class="btn-borrar" onclick="this.parentElement.remove()">✕</button>
+    `;
+    container.appendChild(div);
+  }
+
+  function actualizarTrabajoRealizado() {
+    const checkboxes = document.querySelectorAll('#trabajosCheckboxContainer input[type="checkbox"]:checked');
+    const descripcion = document.getElementById('trabajoDescripcion');
+    
+    if (checkboxes.length === 0) {
+      descripcion.textContent = 'No hay trabajos seleccionados';
+      descripcion.style.color = '#999';
+    } else {
+      const trabajos = Array.from(checkboxes).map(cb => cb.value);
+      descripcion.textContent = trabajos.join(', ');
+      descripcion.style.color = '#333';
+    }
+  }
+
+  function toggleExpandible(header) {
+    const content = header.nextElementSibling;
+    const icon = header.querySelector('.toggle-icon');
+    content.classList.toggle('active');
+    icon.textContent = content.classList.contains('active') ? '▲' : '▼';
+  }
+
+  async function guardarOrden() {
+    // Validaciones básicas
+    const clienteNombre = document.getElementById('clienteNombre').value.trim();
+    if (!clienteNombre) {
+      mostrarNotificacion('⚠️ Ingrese el nombre del cliente', 'error');
+      return;
+    }
+
+    // Recopilar datos del cliente
+    const clienteData = {
+      nombre: clienteNombre,
+      rut: document.getElementById('clienteRut').value,
+      direccion: document.getElementById('clienteDireccion').value,
+      ciudad: document.getElementById('clienteCiudad').value,
+      contacto: document.getElementById('clienteContacto').value,
+      email: document.getElementById('clienteEmail').value,
+      telefono: document.getElementById('clienteTelefono').value
+    };
+
+    // Si es cliente nuevo, guardarlo
+    const clienteExiste = cachedClients.some(c => c.nombre === clienteNombre);
+    if (!clienteExiste) {
+      await guardarNuevoCliente(clienteData);
+    }
+
+    // Recopilar repuestos instalados
+    const repuestosInstalados = [];
+    document.querySelectorAll('#repuestosInstaladosContainer .repuesto-row').forEach(row => {
+      const nombre = row.querySelector('.repuesto-nombre').value.trim();
+      const serie = row.querySelector('.repuesto-serie').value.trim();
+      if (nombre) {
+        repuestosInstalados.push({ nombre, serie });
+      }
+    });
+
+    // Recopilar repuestos retirados
+    const repuestosRetirados = [];
+    document.querySelectorAll('#repuestosRetiradosContainer .repuesto-row').forEach(row => {
+      const nombre = row.querySelector('.repuesto-retirado-nombre').value.trim();
+      const serie = row.querySelector('.repuesto-retirado-serie').value.trim();
+      if (nombre) {
+        repuestosRetirados.push({ nombre, serie });
+      }
+    });
+
+    // Recopilar trabajos realizados
+    const trabajosRealizados = Array.from(
+      document.querySelectorAll('#trabajosCheckboxContainer input[type="checkbox"]:checked')
+    ).map(cb => cb.value);
+
+    // Datos de la orden
+    const ordenData = {
+      numero: numeroActual,
+      fecha: document.getElementById('fechaInput').value,
+      cliente: clienteData,
+      equipo: {
+        marca: document.getElementById('equipoMarca').value,
+        modelo: document.getElementById('equipoModelo').value,
+        serie: document.getElementById('equipoSerie').value
+      },
+      repuestosInstalados,
+      repuestosRetirados,
+      trabajosRealizados,
+      observaciones: document.getElementById('obs').value
+    };
+
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'saveOrden',
+          data: ordenData
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        mostrarNotificacion('✅ Orden guardada exitosamente', 'exito');
+        numeroActual++;
+        document.getElementById('numeroCotizacion').textContent = `N° ${String(numeroActual).padStart(4, '0')}`;
+      } else {
+        mostrarNotificacion('❌ Error al guardar: ' + (result.error || 'Desconocido'), 'error');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      mostrarNotificacion('❌ Error de conexión', 'error');
+    }
+  }
 </script>
 </body>
 </html>
