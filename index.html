@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Informe Técnico - PWA Offline</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:16px;background:#f6f7fb}
+  .app{max-width:900px;margin:0 auto;background:#fff;padding:16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+  h1{margin:0 0 12px;font-size:20px;color:#073b6b}
+  label{display:block;margin-top:8px;font-weight:700;font-size:12px;color:#0a2340}
+  input[type=text], input[type=date], input[type=tel], select, textarea{width:100%;padding:8px;border:1px solid #d1d8e0;border-radius:6px;margin-top:4px;box-sizing:border-box}
+  .row{display:flex;gap:8px}
+  .col{flex:1}
+  .small{flex:0 0 120px}
+  button{background:#0a66c2;color:white;border:none;padding:10px 12px;border-radius:6px;cursor:pointer;margin-top:12px}
+  .secondary{background:#6b7280}
+  .cards{display:grid;grid-template-columns:1fr 280px;gap:12px}
+  .pending{background:#fff;padding:10px;border-radius:6px;border:1px solid #e6eef8;min-height:120px}
+  .mini{font-size:12px;color:#4b5563}
+  canvas{border:1px dashed #cbd5e1;border-radius:6px;touch-action:none;width:100%;height:140px}
+  .images-preview img{max-width:100%;height:auto;margin-top:8px;border-radius:6px;border:1px solid #e2e8f0}
+  .flex-between{display:flex;justify-content:space-between;align-items:center}
+  .badge{background:#e6f0ff;color:#084b9a;padding:6px 8px;border-radius:999px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="flex-between">
+    <h1>Informe Técnico — Inspector de Impresoras</h1>
+    <div>
+      <span class="badge" id="statusBadge">Estado: Online?</span>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <form id="informeForm">
+    <label>Fecha</label>
+    <input type="date" id="fecha" required>
+
+    <div class="row">
+      <div class="col">
+        <label>Cliente</label>
+        <input type="text" id="cliente" placeholder="Nombre del cliente" required>
+      </div>
+      <div class="col">
+        <label>Departamento</label>
+        <input type="text" id="departamento" placeholder="Depto / área">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <label>Nombre de contacto</label>
+        <input type="text" id="contacto">
+      </div>
+      <div class="col">
+        <label>Dirección</label>
+        <input type="text" id="direccion">
+      </div>
+      <div class="col">
+        <label>Ciudad</label>
+        <input type="text" id="ciudad">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="small">
+        <label>RUT</label>
+        <input type="text" id="rut">
+      </div>
+      <div class="col">
+        <label>Teléfono</label>
+        <input type="tel" id="telefono">
+      </div>
+      <div class="small">
+        <label>Equipo (Propio/Arriendo)</label>
+        <select id="propiedad">
+          <option value="propio">Propio</option>
+          <option value="arriendo">Arriendo</option>
+        </select>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="row">
+      <div class="col">
+        <label>Marca</label><input type="text" id="marca">
+      </div>
+      <div class="col">
+        <label>Modelo</label><input type="text" id="modelo">
+      </div>
+      <div class="col">
+        <label>Serie</label><input type="text" id="serie">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <label>Contador B/N</label><input type="text" id="contadorBN">
+      </div>
+      <div class="col">
+        <label>Contador Color</label><input type="text" id="contadorColor">
+      </div>
+    </div>
+
+    <label>Tipo de servicio</label>
+    <select id="tipoServicio">
+      <option value="mantencion">Mantención</option>
+      <option value="reparacion">Reparación</option>
+      <option value="presupuesto">Presupuesto</option>
+      <option value="instalacion">Instalación</option>
+      <option value="retiro">Retiro</option>
+      <option value="configuracion">Configuración</option>
+    </select>
+
+    <label>Observaciones / Diagnóstico</label>
+    <textarea id="observaciones" rows="4"></textarea>
+
+    <label>Repuestos / Acciones realizadas (una por línea)</label>
+    <textarea id="repuestos" rows="3" placeholder="Ej: Fusor - reemplazado"></textarea>
+
+    <!-- Fotos -->
+    <label>Fotos (hasta 3)</label>
+    <input type="file" id="fotos" accept="image/*" multiple>
+    <div class="images-preview" id="imagesPreview"></div>
+
+    <!-- Firmas -->
+    <div class="row" style="margin-top:12px">
+      <div class="col">
+        <label>Nombre técnico</label>
+        <input type="text" id="nombreTecnico" required>
+        <label style="margin-top:8px">Firma técnico</label>
+        <canvas id="firmaTecnico"></canvas>
+        <button type="button" class="secondary" id="limpiarFirmaTec">Limpiar firma técnico</button>
+      </div>
+
+      <div class="col">
+        <label>Nombre cliente</label>
+        <input type="text" id="nombreCliente" required>
+        <label style="margin-top:8px">Firma cliente</label>
+        <canvas id="firmaCliente"></canvas>
+        <button type="button" class="secondary" id="limpiarFirmaCli">Limpiar firma cliente</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <button type="button" id="guardarLocal">💾 Guardar local (offline)</button>
+      <button type="button" id="sincronizarNow">⤴️ Sincronizar ahora</button>
+      <button type="reset" class="secondary">Limpiar formulario</button>
+    </div>
+  </form>
+
+  <hr>
+
+  <div class="cards">
+    <div>
+      <h3>Informes pendientes</h3>
+      <div id="listaPendientes" class="pending mini">Cargando...</div>
+    </div>
+
+    <div>
+      <h3>Acciones</h3>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button id="forzarSync">Forzar sincronización de todos</button>
+        <button id="limpiarPendientes" class="secondary">Eliminar todos los pendientes (local)</button>
+        <div class="mini" style="margin-top:8px">Detecta conexión: <strong id="onlineState">?</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===============================
+  CONFIG: URL de tu Apps Script
+  Reemplaza por tu endpoint web app (doPost)
+=============================== */
+const APPS_SCRIPT_URL = 'TU_APPS_SCRIPT_URL_AQUI'; // <<-- pega tu URL aquí
+
+/* ---------- Inicialización UI ---------- */
+const statusBadge = document.getElementById('statusBadge');
+const onlineState = document.getElementById('onlineState');
+function updateOnlineUI(){
+  const ok = navigator.onLine;
+  onlineState.textContent = ok ? 'Online' : 'Offline';
+  statusBadge.textContent = 'Estado: ' + (ok ? 'Online' : 'Offline');
+  statusBadge.style.background = ok ? '#e6f7ff' : '#fff3cd';
+}
+window.addEventListener('online', () => { updateOnlineUI(); sincronizarPendientes(); });
+window.addEventListener('offline', updateOnlineUI);
+updateOnlineUI();
+
+/* ---------- IndexedDB básico ---------- */
+const DB_NAME = 'informes_db_v1';
+const STORE_NAME = 'informes';
+let db;
+function openDB(){ return new Promise((res,rej)=>{
+  const req = indexedDB.open(DB_NAME,1);
+  req.onupgradeneeded = e => {
+    const idb = e.target.result;
+    if(!idb.objectStoreNames.contains(STORE_NAME)){
+      idb.createObjectStore(STORE_NAME,{keyPath:'id'});
+    }
+  };
+  req.onsuccess = e => { db = e.target.result; res(db); };
+  req.onerror = e => rej(e);
+}); }
+
+function putInforme(obj){ return new Promise(async (res,rej)=>{
+  if(!db) await openDB();
+  const tx = db.transaction(STORE_NAME,'readwrite');
+  tx.objectStore(STORE_NAME).put(obj);
+  tx.oncomplete = ()=> res(true);
+  tx.onerror = e=> rej(e);
+}); }
+
+function getAllInformes(){ return new Promise(async (res,rej)=>{
+  if(!db) await openDB();
+  const tx = db.transaction(STORE_NAME,'readonly');
+  const req = tx.objectStore(STORE_NAME).getAll();
+  req.onsuccess = ()=> res(req.result || []);
+  req.onerror = e => rej(e);
+}); }
+
+function deleteInforme(id){ return new Promise(async (res,rej)=>{
+  if(!db) await openDB();
+  const tx = db.transaction(STORE_NAME,'readwrite');
+  tx.objectStore(STORE_NAME).delete(id);
+  tx.oncomplete = ()=> res(true);
+  tx.onerror = e=> rej(e);
+}); }
+
+/* ---------- Form helpers ---------- */
+const form = document.getElementById('informeForm');
+const inputFotos = document.getElementById('fotos');
+const imagesPreview = document.getElementById('imagesPreview');
+const MAX_FOTOS = 3;
+
+inputFotos.addEventListener('change', async (ev)=>{
+  imagesPreview.innerHTML = '';
+  const files = Array.from(ev.target.files).slice(0,MAX_FOTOS);
+  for(const f of files){
+    const imgURL = await fileToDataURL(f);
+    const img = document.createElement('img'); img.src = imgURL;
+    imagesPreview.appendChild(img);
+  }
+});
+
+/* ---------- Canvas firma ---------- */
+function setupCanvas(id){
+  const c = document.getElementById(id);
+  const ctx = c.getContext('2d');
+  // tamaño responsive
+  function resize(){ const ratio = window.devicePixelRatio || 1; c.width = c.clientWidth*ratio; c.height = 140*ratio; ctx.scale(ratio,ratio); ctx.lineWidth = 2; ctx.lineCap='round'; }
+  resize(); window.addEventListener('resize', resize);
+  let drawing=false;
+  function start(e){ drawing=true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x,p.y); e.preventDefault(); }
+  function move(e){ if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); e.preventDefault(); }
+  function end(){ drawing=false; }
+  function getPos(e){
+    if(e.touches && e.touches[0]) e = e.touches[0];
+    const rect = c.getBoundingClientRect();
+    return { x: (e.clientX-rect.left), y: (e.clientY-rect.top) };
+  }
+  c.addEventListener('mousedown', start); c.addEventListener('mousemove', move); c.addEventListener('mouseup', end); c.addEventListener('mouseout', end);
+  c.addEventListener('touchstart', start); c.addEventListener('touchmove', move); c.addEventListener('touchend', end);
+  return {
+    clear: ()=> { ctx.clearRect(0,0,c.width,c.height); },
+    toDataURL: ()=> c.toDataURL('image/png')
+  };
+}
+const firmaTecnico = setupCanvas('firmaTecnico');
+const firmaCliente = setupCanvas('firmaCliente');
+document.getElementById('limpiarFirmaTec').onclick = ()=> firmaTecnico.clear();
+document.getElementById('limpiarFirmaCli').onclick = ()=> firmaCliente.clear();
+
+/* ---------- util: file -> dataURL ---------- */
+function fileToDataURL(file){ return new Promise((res,rej)=>{
+  const fr = new FileReader();
+  fr.onload = ()=> res(fr.result);
+  fr.onerror = rej;
+  fr.readAsDataURL(file);
+}); }
+
+/* ---------- Guardar local ---------- */
+document.getElementById('guardarLocal').addEventListener('click', async ()=>{
+  // validaciones simples
+  if(!document.getElementById('cliente').value) return alert('Ingresa nombre de cliente');
+  if(!document.getElementById('nombreTecnico').value) return alert('Ingresa nombre técnico');
+  if(!document.getElementById('nombreCliente').value) return alert('Ingresa nombre cliente');
+
+  // construir objeto
+  const id = 'inf_' + Date.now();
+  const files = Array.from(inputFotos.files).slice(0,MAX_FOTOS);
+  const fotosData = [];
+  for(const f of files) fotosData.push(await fileToDataURL(f));
+
+  const informe = {
+    id,
+    fecha: document.getElementById('fecha').value || new Date().toISOString().slice(0,10),
+    cliente: document.getElementById('cliente').value,
+    departamento: document.getElementById('departamento').value,
+    contacto: document.getElementById('contacto').value,
+    direccion: document.getElementById('direccion').value,
+    ciudad: document.getElementById('ciudad').value,
+    rut: document.getElementById('rut').value,
+    telefono: document.getElementById('telefono').value,
+    propiedad: document.getElementById('propiedad').value,
+    marca: document.getElementById('marca').value,
+    modelo: document.getElementById('modelo').value,
+    serie: document.getElementById('serie').value,
+    contadorBN: document.getElementById('contadorBN').value,
+    contadorColor: document.getElementById('contadorColor').value,
+    tipoServicio: document.getElementById('tipoServicio').value,
+    observaciones: document.getElementById('observaciones').value,
+    repuestos: document.getElementById('repuestos').value,
+    nombreTecnico: document.getElementById('nombreTecnico').value,
+    firmaTecnico: firmaTecnico.toDataURL(),
+    nombreCliente: document.getElementById('nombreCliente').value,
+    firmaCliente: firmaCliente.toDataURL(),
+    fotos: fotosData,
+    estado: 'pendiente'
+  };
+
+  await putInforme(informe);
+  mostrarNotificacion('Guardado localmente ✔');
+  refreshLista();
+  form.reset();
+  imagesPreview.innerHTML='';
+  firmaTecnico.clear(); firmaCliente.clear();
+});
+
+/* ---------- Mostrar lista pendientes ---------- */
+async function refreshLista(){
+  const arr = await getAllInformes();
+  const cont = document.getElementById('listaPendientes');
+  if(arr.length===0){ cont.innerHTML = '<div class="mini">No hay informes pendientes</div>'; return; }
+  cont.innerHTML = '';
+  arr.forEach(i=>{
+    const div = document.createElement('div');
+    div.style.borderBottom = '1px solid #eef2f7';
+    div.style.padding = '8px 0';
+    div.innerHTML = `<strong>${i.cliente}</strong> <div class="mini">${i.fecha} · ${i.tipoServicio} · ${i.estado}</div>
+      <div style="margin-top:6px">
+        <button data-id="${i.id}" class="btn-send">Enviar</button>
+        <button data-id="${i.id}" class="btn-delete secondary">Eliminar</button>
+      </div>`;
+    cont.appendChild(div);
+  });
+
+  // attach events
+  cont.querySelectorAll('.btn-send').forEach(b=> b.onclick = async e=>{
+    const id = e.target.dataset.id;
+    const all = await getAllInformes();
+    const item = all.find(x=>x.id===id);
+    if(item) await enviarInforme(item);
+  });
+  cont.querySelectorAll('.btn-delete').forEach(b=> b.onclick = async e=>{
+    if(!confirm('Eliminar este informe localmente?')) return;
+    await deleteInforme(e.target.dataset.id);
+    refreshLista();
+  });
+}
+refreshLista();
+
+/* ---------- Sincronización ---------- */
+async function sincronizarPendientes(){
+  if(!navigator.onLine) return;
+  const pendientes = await getAllInformes();
+  for(const p of pendientes){
+    if(p.estado === 'pendiente') {
+      try {
+        await enviarInforme(p);
+      } catch(err){
+        console.error('Error al sincronizar', err);
+      }
+    }
+  }
+  refreshLista();
+}
+
+document.getElementById('forzarSync').onclick = sincronizarPendientes;
+document.getElementById('sincronizarNow').onclick = async ()=>{
+  const all = await getAllInformes();
+  if(all.length===0) return alert('No hay pendientes');
+  for(const i of all) await enviarInforme(i);
+};
+
+/* ---------- Envío a Apps Script (doPost) ---------- */
+async function enviarInforme(informe){
+  // marca como procesando localmente
+  informe.estado = 'enviando';
+  await putInforme(informe);
+  refreshLista();
+
+  // prepara payload: enviamos todo, fotos como DataURL
+  const payload = { informe };
+
+  // POST
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('TU_APPS_SCRIPT_URL_AQUI')) {
+    alert('Debes configurar APPS_SCRIPT_URL en el archivo (Apps Script URL).');
+    throw new Error('No endpoint configurado');
+  }
+
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if(!res.ok) throw new Error('Error red');
+
+  const data = await res.json();
+  if(data && data.status === 'ok'){
+    // marca sincronizado
+    await deleteInforme(informe.id);
+    mostrarNotificacion('Sincronizado: ' + informe.cliente);
+    refreshLista();
+  } else {
+    // si la API devolvió error, dejar como pendiente y mostrar
+    informe.estado = 'pendiente';
+    await putInforme(informe);
+    refreshLista();
+    throw new Error('API error: ' + JSON.stringify(data));
+  }
+}
+
+/* ---------- util: notificación visual ---------- */
+function mostrarNotificacion(msg){
+  statusBadge.textContent = msg;
+  setTimeout(updateOnlineUI, 3000);
+}
+
+/* ---------- Init: fecha por defecto y registrar SW ---------- */
+document.addEventListener('DOMContentLoaded', ()=>{
+  const hoy = new Date();
+  const yyyy = hoy.getFullYear(); const mm = String(hoy.getMonth()+1).padStart(2,'0'); const dd = String(hoy.getDate()).padStart(2,'0');
+  document.getElementById('fecha').value = `${yyyy}-${mm}-${dd}`;
+  openDB().then(refreshLista);
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').then(()=> console.log('SW registrado')).catch(err=>console.warn('SW failed',err));
+  }
+});
+</script>
+</body>
+</html>
