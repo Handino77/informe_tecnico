@@ -161,19 +161,6 @@
     display: flex;
     flex-direction: column;
   }
-  
-  .firma-box input {
-    margin-bottom: 40px;
-  }
-  
-  .firma-linea {
-    border-top: 1px solid #333;
-    padding-top: 5px;
-    text-align: center;
-    font-size: 8px;
-    color: #666;
-    font-weight: bold;
-  }
 
   /* Botones */
   .botonera { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 8px; z-index: 100; }
@@ -322,6 +309,26 @@
       <label>Serie</label>
       <input type="text" id="equipoSerie" placeholder="N° de serie">
     </div>
+    <div class="campo">
+      <label>Condición</label>
+      <select id="equipoCondicion">
+        <option value="">Seleccionar...</option>
+        <option value="Venta">Venta</option>
+        <option value="Arriendo">Arriendo</option>
+      </select>
+    </div>
+  </div>
+
+  <h2>Contadores de Impresora</h2>
+  <div class="grid-cliente">
+    <div class="campo">
+      <label>Contador B/N</label>
+      <input type="number" id="contadorBN" placeholder="0">
+    </div>
+    <div class="campo">
+      <label>Contador Color</label>
+      <input type="number" id="contadorColor" placeholder="0">
+    </div>
   </div>
 
   <!-- Repuestos Instalados -->
@@ -396,17 +403,13 @@
     <div class="grid-firmas">
       <div class="firma-box">
         <label>Nombre Técnico</label>
-        <input type="text" id="nombreTecnico" placeholder="Nombre completo del técnico">
-        <div class="firma-linea">
-          <span>Firma Técnico</span>
-        </div>
+        <select id="nombreTecnico">
+          <option value="">Seleccionar técnico...</option>
+        </select>
       </div>
       <div class="firma-box">
         <label>Nombre Cliente</label>
         <input type="text" id="nombreClienteFirma" placeholder="Nombre completo del cliente">
-        <div class="firma-linea">
-          <span>Firma Cliente</span>
-        </div>
       </div>
     </div>
   </div>
@@ -426,6 +429,7 @@
   let cachedModelos = [];
   let cachedRepuestos = [];
   let cachedServicios = [];
+  let cachedTecnicos = [];
   let numeroActual = 0;
 
   // Configuración inicial
@@ -449,10 +453,12 @@
         cachedModelos = data.modelos || [];
         cachedRepuestos = data.repuestos || [];
         cachedServicios = data.servicios || [];
+        cachedTecnicos = data.tecnicos || [];
         numeroActual = data.correlativo || 1;
         
         actualizarDataLists();
         cargarServiciosCheckboxes();
+        cargarTecnicos();
         document.getElementById('numeroCotizacion').textContent = `N° ${String(numeroActual).padStart(4, '0')}`;
       }
     } catch (error) {
@@ -491,6 +497,17 @@
         <label for="trabajo${index}" style="text-transform: none; font-weight: normal;">${servicio}</label>
       `;
       container.appendChild(div);
+    });
+  }
+
+  function cargarTecnicos() {
+    const select = document.getElementById('nombreTecnico');
+    select.innerHTML = '<option value="">Seleccionar técnico...</option>';
+    cachedTecnicos.forEach(tecnico => {
+      const option = document.createElement('option');
+      option.value = tecnico;
+      option.textContent = tecnico;
+      select.appendChild(option);
     });
   }
 
@@ -726,12 +743,19 @@
       equipo: {
         marca: document.getElementById('equipoMarca').value,
         modelo: document.getElementById('equipoModelo').value,
-        serie: document.getElementById('equipoSerie').value
+        serie: document.getElementById('equipoSerie').value,
+        condicion: document.getElementById('equipoCondicion').value
+      },
+      contadores: {
+        bn: document.getElementById('contadorBN').value,
+        color: document.getElementById('contadorColor').value
       },
       repuestosInstalados,
       repuestosRetirados,
       trabajosRealizados,
-      observaciones: document.getElementById('obs').value
+      observaciones: document.getElementById('obs').value,
+      tecnico: document.getElementById('nombreTecnico').value,
+      clienteFirma: document.getElementById('nombreClienteFirma').value
     };
 
     try {
