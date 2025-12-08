@@ -41,7 +41,6 @@
     justify-content: space-between;
     align-items: flex-end;
     flex-wrap: wrap;
-  
   }
 
   .logo-area { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-grow: 1; }
@@ -146,20 +145,6 @@
     color: #999;
   }
 
-  /* Foto section */
-  .photo-section {
-    background: #eef6ff;
-    padding: 8px;
-    border-radius: 6px;
-    margin-top: 6px;
-    border: 1px solid #dbeefc;
-  }
-  .photo-controls { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
-  .photo-preview { display:flex; gap:8px; flex-wrap:wrap; }
-  .photo-preview img { width:120px; height:90px; object-fit:cover; border-radius:6px; border:1px solid #ccc; }
-
-  .photo-meta { font-size: 10px; color:#333; }
-
   /* Footer */
   .footer-section { flex-shrink: 0; margin-top: 15px; }
   .obs-section { margin-bottom: 15px; }
@@ -175,6 +160,19 @@
   .firma-box {
     display: flex;
     flex-direction: column;
+  }
+  
+  .firma-box input {
+    margin-bottom: 40px;
+  }
+  
+  .firma-linea {
+    border-top: 1px solid #333;
+    padding-top: 5px;
+    text-align: center;
+    font-size: 8px;
+    color: #666;
+    font-weight: bold;
   }
 
   /* Botones */
@@ -324,26 +322,6 @@
       <label>Serie</label>
       <input type="text" id="equipoSerie" placeholder="N° de serie">
     </div>
-    <div class="campo">
-      <label>Condición</label>
-      <select id="equipoCondicion">
-        <option value="">Seleccionar...</option>
-        <option value="Venta">Venta</option>
-        <option value="Arriendo">Arriendo</option>
-      </select>
-    </div>
-  </div>
-
-  <h2>Contadores de Impresora</h2>
-  <div class="grid-cliente">
-    <div class="campo">
-      <label>Contador B/N</label>
-      <input type="number" id="contadorBN" placeholder="0">
-    </div>
-    <div class="campo">
-      <label>Contador Color</label>
-      <input type="number" id="contadorColor" placeholder="0">
-    </div>
   </div>
 
   <!-- Repuestos Instalados -->
@@ -408,18 +386,6 @@
     </div>
   </div>
 
-  <!-- FOTO: ubicada antes de Firmas (elección B) -->
-  <h2>📷 Fotografías del Servicio</h2>
-  <div class="photo-section">
-    <div class="photo-controls">
-      <div class="photo-meta">Adjunta hasta 5 fotos (tamaño optimizado).</div>
-      <div style="flex:1"></div>
-      <button type="button" class="btn-gris" onclick="tomarFoto()" id="btnAgregarFoto">➕ Agregar Foto</button>
-      <button type="button" class="btn-gris" onclick="limpiarFotos()" id="btnLimpiarFotos">🗑️ Limpiar</button>
-    </div>
-    <div class="photo-preview" id="photoPreview"></div>
-  </div>
-
   <h2>Observaciones Adicionales</h2>
   <div class="obs-section">
     <textarea id="obs" placeholder="Detalles de la atención que no están registrados en los menús desplegables..."></textarea>
@@ -430,13 +396,17 @@
     <div class="grid-firmas">
       <div class="firma-box">
         <label>Nombre Técnico</label>
-        <select id="nombreTecnico">
-          <option value="">Seleccionar técnico...</option>
-        </select>
+        <input type="text" id="nombreTecnico" placeholder="Nombre completo del técnico">
+        <div class="firma-linea">
+          <span>Firma Técnico</span>
+        </div>
       </div>
       <div class="firma-box">
         <label>Nombre Cliente</label>
         <input type="text" id="nombreClienteFirma" placeholder="Nombre completo del cliente">
+        <div class="firma-linea">
+          <span>Firma Cliente</span>
+        </div>
       </div>
     </div>
   </div>
@@ -449,42 +419,25 @@
 <datalist id="modelos-list"></datalist>
 
 <script>
-  // =========================
-  // CONFIG / ENDPOINT
-  // =========================
-  const APPS_SCRIPT_URL = 'https://informes-realtech.realtech-spa.workers.dev/';
-  // Si usas otro URL para fotos/sync, actualiza aquí.
-
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwt-64kJIZop4RVHvai9yx0lsgBgSm7MnmExHKXRawMY_MfKOeDz2HV8m4dU_KE3yy8Bw/exec';
+  
   let cachedClients = [];
   let cachedMarcas = [];
   let cachedModelos = [];
   let cachedRepuestos = [];
   let cachedServicios = [];
-  let cachedTecnicos = [];
   let numeroActual = 0;
 
-  // Fotos
-  let fotos = []; // array base64
-  const MAX_FOTOS = 5;
-
-  // IndexedDB
-  let db;
-
-  // Fecha por defecto
+  // Configuración inicial
   const hoy = new Date();
   const fechaDefault = hoy.toISOString().split('T')[0];
   document.getElementById('fechaInput').value = fechaDefault;
 
-  // Iniciar
+  // Cargar datos iniciales
   window.addEventListener('DOMContentLoaded', async () => {
     await cargarDatosIniciales();
-    await abrirDB();
-    syncOrdenesPendientes(); // intentar sincronizar si hay internet
   });
 
-  // =========================
-  // CARGA INICIAL (Google Apps Script)
-  // =========================
   async function cargarDatosIniciales() {
     try {
       const response = await fetch(`${APPS_SCRIPT_URL}?action=loadData`);
@@ -496,15 +449,11 @@
         cachedModelos = data.modelos || [];
         cachedRepuestos = data.repuestos || [];
         cachedServicios = data.servicios || [];
-        cachedTecnicos = data.tecnicos || [];
         numeroActual = data.correlativo || 1;
         
         actualizarDataLists();
         cargarServiciosCheckboxes();
-        cargarTecnicos();
         document.getElementById('numeroCotizacion').textContent = `N° ${String(numeroActual).padStart(4, '0')}`;
-      } else {
-        console.warn('Respuesta loadData no exitosa', data);
       }
     } catch (error) {
       console.error('Error cargando datos:', error);
@@ -515,19 +464,19 @@
   function actualizarDataLists() {
     // Clientes
     const clientesList = document.getElementById('clientes-list');
-    clientesList.innerHTML = cachedClients.map(c => `<option value="${escapeHtml(c.nombre)}">`).join('');
+    clientesList.innerHTML = cachedClients.map(c => `<option value="${c.nombre}">`).join('');
     
     // Marcas
     const marcasList = document.getElementById('marcas-list');
-    marcasList.innerHTML = cachedMarcas.map(m => `<option value="${escapeHtml(m)}">`).join('');
+    marcasList.innerHTML = cachedMarcas.map(m => `<option value="${m}">`).join('');
     
     // Modelos
     const modelosList = document.getElementById('modelos-list');
-    modelosList.innerHTML = cachedModelos.map(m => `<option value="${escapeHtml(m)}">`).join('');
+    modelosList.innerHTML = cachedModelos.map(m => `<option value="${m}">`).join('');
     
     // Repuestos
     const repuestosList = document.getElementById('repuestos-list');
-    repuestosList.innerHTML = cachedRepuestos.map(r => `<option value="${escapeHtml(r)}">`).join('');
+    repuestosList.innerHTML = cachedRepuestos.map(r => `<option value="${r}">`).join('');
   }
 
   function cargarServiciosCheckboxes() {
@@ -538,21 +487,10 @@
       const div = document.createElement('div');
       div.className = 'checkbox-item';
       div.innerHTML = `
-        <input type="checkbox" id="trabajo${index}" value="${escapeHtml(servicio)}" onchange="actualizarTrabajoRealizado()">
-        <label for="trabajo${index}" style="text-transform: none; font-weight: normal;">${escapeHtml(servicio)}</label>
+        <input type="checkbox" id="trabajo${index}" value="${servicio}" onchange="actualizarTrabajoRealizado()">
+        <label for="trabajo${index}" style="text-transform: none; font-weight: normal;">${servicio}</label>
       `;
       container.appendChild(div);
-    });
-  }
-
-  function cargarTecnicos() {
-    const select = document.getElementById('nombreTecnico');
-    select.innerHTML = '<option value="">Seleccionar técnico...</option>';
-    cachedTecnicos.forEach(tecnico => {
-      const option = document.createElement('option');
-      option.value = tecnico;
-      option.textContent = tecnico;
-      select.appendChild(option);
     });
   }
 
@@ -577,8 +515,7 @@
         body: JSON.stringify({
           action: 'addCliente',
           data: clienteData
-        }),
-        headers: { 'Content-Type': 'application/json' }
+        })
       });
       const result = await response.json();
       if (result.success) {
@@ -598,8 +535,7 @@
         body: JSON.stringify({
           action: 'addMarca',
           data: marca
-        }),
-        headers: { 'Content-Type': 'application/json' }
+        })
       });
       const result = await response.json();
       if (result.success) {
@@ -619,8 +555,7 @@
         body: JSON.stringify({
           action: 'addModelo',
           data: modelo
-        }),
-        headers: { 'Content-Type': 'application/json' }
+        })
       });
       const result = await response.json();
       if (result.success) {
@@ -640,8 +575,7 @@
         body: JSON.stringify({
           action: 'addRepuesto',
           data: repuesto
-        }),
-        headers: { 'Content-Type': 'application/json' }
+        })
       });
       const result = await response.json();
       if (result.success) {
@@ -734,106 +668,6 @@
     icon.textContent = content.classList.contains('active') ? '▲' : '▼';
   }
 
-  // =========================
-  // FUNCIONES DE FOTOS (compresión + preview)
-  // =========================
-  function tomarFoto() {
-    if (fotos.length >= MAX_FOTOS) {
-      mostrarNotificacion(`⚠️ Máximo ${MAX_FOTOS} fotos`, 'error');
-      return;
-    }
-
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.capture = "environment";
-
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        try {
-          const compressed = await comprimirImagen(ev.target.result);
-          fotos.push(compressed);
-          mostrarFotos();
-        } catch (err) {
-          console.error('Error comprimiendo imagen', err);
-          mostrarNotificacion('❌ Error al procesar la foto', 'error');
-        }
-      };
-
-      reader.readAsDataURL(file);
-    };
-
-    input.click();
-  }
-
-  function mostrarFotos() {
-    const cont = document.getElementById("photoPreview");
-    cont.innerHTML = "";
-    fotos.forEach((f, idx) => {
-      const wrapper = document.createElement('div');
-      wrapper.style.position = 'relative';
-      const img = document.createElement("img");
-      img.src = f;
-      img.alt = `Foto ${idx+1}`;
-      wrapper.appendChild(img);
-
-      const btn = document.createElement('button');
-      btn.className = 'btn-borrar';
-      btn.style.position = 'absolute';
-      btn.style.top = '4px';
-      btn.style.right = '4px';
-      btn.style.width = '26px';
-      btn.style.height = '26px';
-      btn.style.padding = '0';
-      btn.textContent = '✕';
-      btn.onclick = () => { fotos.splice(idx,1); mostrarFotos(); };
-      wrapper.appendChild(btn);
-
-      cont.appendChild(wrapper);
-    });
-
-    // deshabilitar agregar si llega al max
-    document.getElementById('btnAgregarFoto').disabled = fotos.length >= MAX_FOTOS;
-  }
-
-  function limpiarFotos() {
-    fotos = [];
-    mostrarFotos();
-    document.getElementById('btnAgregarFoto').disabled = false;
-  }
-
-  async function comprimirImagen(base64) {
-    const img = new Image();
-    img.src = base64;
-    await img.decode();
-
-    const canvas = document.createElement("canvas");
-    const MAX_WIDTH = 1280;
-
-    let width = img.width;
-    let height = img.height;
-
-    if (width > MAX_WIDTH) {
-      height = Math.round(height * (MAX_WIDTH / width));
-      width = MAX_WIDTH;
-    }
-
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0, width, height);
-
-    // Calidad 0.6 para equilibrar peso/calidad
-    return canvas.toDataURL("image/jpeg", 0.6);
-  }
-
-  // =========================
-  // GUARDAR ORDEN (incluye fotos). Si falla -> guardar offline
-  // =========================
   async function guardarOrden() {
     // Validaciones básicas
     const clienteNombre = document.getElementById('clienteNombre').value.trim();
@@ -853,7 +687,7 @@
       telefono: document.getElementById('clienteTelefono').value
     };
 
-    // Si es cliente nuevo, guardarlo (intento)
+    // Si es cliente nuevo, guardarlo
     const clienteExiste = cachedClients.some(c => c.nombre === clienteNombre);
     if (!clienteExiste) {
       await guardarNuevoCliente(clienteData);
@@ -862,8 +696,8 @@
     // Recopilar repuestos instalados
     const repuestosInstalados = [];
     document.querySelectorAll('#repuestosInstaladosContainer .repuesto-row').forEach(row => {
-      const nombre = row.querySelector('.repuesto-nombre')?.value.trim() || '';
-      const serie = row.querySelector('.repuesto-serie')?.value.trim() || '';
+      const nombre = row.querySelector('.repuesto-nombre').value.trim();
+      const serie = row.querySelector('.repuesto-serie').value.trim();
       if (nombre) {
         repuestosInstalados.push({ nombre, serie });
       }
@@ -872,8 +706,8 @@
     // Recopilar repuestos retirados
     const repuestosRetirados = [];
     document.querySelectorAll('#repuestosRetiradosContainer .repuesto-row').forEach(row => {
-      const nombre = row.querySelector('.repuesto-retirado-nombre')?.value.trim() || '';
-      const serie = row.querySelector('.repuesto-retirado-serie')?.value.trim() || '';
+      const nombre = row.querySelector('.repuesto-retirado-nombre').value.trim();
+      const serie = row.querySelector('.repuesto-retirado-serie').value.trim();
       if (nombre) {
         repuestosRetirados.push({ nombre, serie });
       }
@@ -892,24 +726,12 @@
       equipo: {
         marca: document.getElementById('equipoMarca').value,
         modelo: document.getElementById('equipoModelo').value,
-        serie: document.getElementById('equipoSerie').value,
-        condicion: document.getElementById('equipoCondicion').value
-      },
-      contadores: {
-        bn: document.getElementById('contadorBN').value,
-        color: document.getElementById('contadorColor').value
+        serie: document.getElementById('equipoSerie').value
       },
       repuestosInstalados,
       repuestosRetirados,
       trabajosRealizados,
-      observaciones: document.getElementById('obs').value,
-      tecnico: document.getElementById('nombreTecnico').value,
-      clienteFirma: document.getElementById('nombreClienteFirma').value,
-      fotos: fotos, // <-- aquí incluimos las fotos (base64)
-      meta: {
-        creadoEn: new Date().toISOString(),
-        htmlSnapshot: '' // evitando guardar body grande, se puede agregar si se requiere
-      }
+      observaciones: document.getElementById('obs').value
     };
 
     try {
@@ -918,8 +740,7 @@
         body: JSON.stringify({
           action: 'saveOrden',
           data: ordenData
-        }),
-        headers: { 'Content-Type': 'application/json' }
+        })
       });
       
       const result = await response.json();
@@ -928,143 +749,14 @@
         mostrarNotificacion('✅ Orden guardada exitosamente', 'exito');
         numeroActual++;
         document.getElementById('numeroCotizacion').textContent = `N° ${String(numeroActual).padStart(4, '0')}`;
-        // limpiar formulario parcial opcional: comentar si no quieres limpiar
-        // limpiarFormularioBasico();
       } else {
-        mostrarNotificacion('❌ Error al guardar: ' + (result.error || 'Desconocido') + '. Se guarda localmente.', 'error');
-        // Guardar offline para sincronizar luego
-        await guardarOrdenOffline(ordenData);
+        mostrarNotificacion('❌ Error al guardar: ' + (result.error || 'Desconocido'), 'error');
       }
     } catch (error) {
       console.error('Error:', error);
-      mostrarNotificacion('❌ Error de conexión. Orden guardada localmente.', 'error');
-      await guardarOrdenOffline(ordenData);
+      mostrarNotificacion('❌ Error de conexión', 'error');
     }
   }
-
-  // =========================
-  // INDEXEDDB: Guardado offline de órdenes pendientes
-  // =========================
-  function abrirDB() {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open("realtechDB_v2", 1);
-
-      request.onupgradeneeded = (e) => {
-        db = e.target.result;
-        if (!db.objectStoreNames.contains("ordenesPendientes")) {
-          db.createObjectStore("ordenesPendientes", { keyPath: "id" });
-        }
-      };
-
-      request.onsuccess = (e) => {
-        db = e.target.result;
-        resolve();
-      };
-
-      request.onerror = (e) => {
-        console.error('IndexedDB error', e);
-        reject(e);
-      };
-    });
-  }
-
-  async function guardarOrdenOffline(ordenData) {
-    await abrirDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(["ordenesPendientes"], "readwrite");
-      const store = tx.objectStore("ordenesPendientes");
-      const item = { id: Date.now(), orden: ordenData };
-      const req = store.put(item);
-      req.onsuccess = () => { resolve(true); };
-      req.onerror = (e) => { console.error('Error guardando orden offline', e); reject(e); };
-    });
-  }
-
-  async function obtenerOrdenesPendientes() {
-    await abrirDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(["ordenesPendientes"], "readonly");
-      const store = tx.objectStore("ordenesPendientes");
-      const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = (e) => reject(e);
-    });
-  }
-
-  async function borrarOrdenPendiente(id) {
-    await abrirDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(["ordenesPendientes"], "readwrite");
-      const store = tx.objectStore("ordenesPendientes");
-      const req = store.delete(id);
-      req.onsuccess = () => resolve(true);
-      req.onerror = (e) => reject(e);
-    });
-  }
-
-  async function syncOrdenesPendientes() {
-    if (!navigator.onLine) return;
-    const pendientes = await obtenerOrdenesPendientes();
-    if (!pendientes.length) return;
-
-    for (const item of pendientes) {
-      try {
-        const res = await fetch(APPS_SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "saveOrden", data: item.orden }),
-          headers: { "Content-Type": "application/json" }
-        });
-        const json = await res.json();
-        if (json && json.success) {
-          await borrarOrdenPendiente(item.id);
-          console.log("Orden sincronizada:", item.id);
-          mostrarNotificacion('📶 Orden(es) pendientes sincronizadas', 'exito');
-        } else {
-          console.warn('No se pudo sincronizar orden', item.id, json);
-        }
-      } catch (e) {
-        console.log("Sin Internet o error al sincronizar. Reintentar luego...");
-        return;
-      }
-    }
-  }
-
-  window.addEventListener("online", () => {
-    syncOrdenesPendientes();
-  });
-
-  // =========================
-  // UTILIDADES
-  // =========================
-  function escapeHtml(str) {
-    if (typeof str !== 'string') return str;
-    return str.replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
-  }
-
-  // =========================
-  // Limpieza de formulario (opcional)
-  // =========================
-  function limpiarFormularioBasico() {
-    // No borra todo para evitar pérdida accidental; ajusta si quieres limpiar
-    document.getElementById('clienteNombre').value = '';
-    document.getElementById('clienteRut').value = '';
-    document.getElementById('clienteDireccion').value = '';
-    document.getElementById('clienteCiudad').value = '';
-    document.getElementById('clienteContacto').value = '';
-    document.getElementById('clienteEmail').value = '';
-    document.getElementById('clienteTelefono').value = '';
-    document.getElementById('equipoMarca').value = '';
-    document.getElementById('equipoModelo').value = '';
-    document.getElementById('equipoSerie').value = '';
-    document.getElementById('equipoCondicion').value = '';
-    document.getElementById('contadorBN').value = '';
-    document.getElementById('contadorColor').value = '';
-    document.getElementById('obs').value = '';
-    document.getElementById('nombreClienteFirma').value = '';
-    fotos = [];
-    mostrarFotos();
-  }
-
 </script>
 </body>
 </html>
