@@ -32,6 +32,41 @@
     overflow: visible;
   }
 
+  /* Barra de estado conexión */
+  .status-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #004a99;
+    color: white;
+    font-size: 12px;
+    padding: 6px 12px;
+    text-align: center;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .status-bar.offline { background: #cc0000; }
+  .sync-btn {
+    background: rgba(255,255,255,0.3);
+    border: none;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .pendientes-count {
+    background: #ff9800;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-weight: bold;
+    margin-left: 8px;
+  }
+
   /* Header */
   .header {
     border-bottom: 2px solid #004a99;
@@ -176,7 +211,14 @@
   }
 
   /* Botones */
-  .botonera { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 8px; z-index: 100; }
+  .botonera { 
+    position: fixed; 
+    bottom: 15px; 
+    right: 15px; 
+    display: flex; 
+    gap: 8px; 
+    z-index: 100; 
+  }
   button { 
     padding: 8px 12px; cursor: pointer; border: none; border-radius: 4px; 
     font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
@@ -193,7 +235,7 @@
   /* Notificación */
   .notificacion {
     position: fixed;
-    top: 20px;
+    top: 60px;
     right: 20px;
     padding: 15px 20px;
     border-radius: 8px;
@@ -225,17 +267,14 @@
   @media print {
     @page { margin: 0.5cm !important; size: letter; }
     body { margin: 0; padding: 0; background: white; }
-    
     .documento {
       width: 100%; 
       box-shadow: none;
       padding: 0.5cm 0.8cm !important; 
       margin: 0;
     }
-
-    .botonera, .btn-borrar, .notificacion { display: none !important; } 
-    
-    input, textarea, td input, select, .fecha-box input {
+    .botonera, .btn-borrar, .notificacion, .status-bar { display: none !important; } 
+    input, textarea, select, .fecha-box input {
       background: transparent !important; border: none !important; 
       padding: 0 !important;
     }
@@ -248,13 +287,24 @@
 </head>
 <body>
 
+<!-- Barra de estado conexión -->
+<div class="status-bar" id="statusBar">
+  <span id="statusText">Cargando estado de conexión...</span>
+  <div>
+    <span id="pendientesBadge" class="pendientes-count" style="display:none">0</span>
+    <button class="sync-btn" id="btnSync" onclick="sincronizarPendientes()" style="display:none">
+      Sincronizar
+    </button>
+  </div>
+</div>
+
 <div class="notificacion" id="notificacion"></div>
 
 <div class="botonera">
   <button class="btn-gris" onclick="agregarRepuestoInstalado()">+ Rep. Instalado</button>
   <button class="btn-gris" onclick="agregarRepuestoRetirado()">+ Rep. Retirado</button>
-  <button class="btn-guardar" onclick="guardarOrden()">💾 Guardar</button>
-  <button class="btn-azul" onclick="window.print()">🖨️ Imprimir</button>
+  <button class="btn-guardar" onclick="guardarOrden()">Guardar</button>
+  <button class="btn-azul" onclick="window.print()">Imprimir</button>
 </div>
 
 <div class="documento">
@@ -272,7 +322,7 @@
       </div>
     </div>
     <div class="titulo-doc">
-      <div class="numero-cotizacion" id="numeroCotizacion">N° ---</div>
+      <div class="numero-cotizacion" id="numeroCotizacion">N° 0001</div>
       <h1>Orden de Servicio Técnico</h1>
       <div class="fecha-box">
         Emisión: <input type="date" id="fechaInput">
@@ -327,7 +377,7 @@
   <!-- Repuestos Instalados -->
   <div class="expandible-section">
     <div class="expandible-header" onclick="toggleExpandible(this)">
-      <span>📦 Repuestos Instalados</span>
+      <span>Repuestos Instalados</span>
       <span class="toggle-icon">▼</span>
     </div>
     <div class="expandible-content">
@@ -350,7 +400,7 @@
   <!-- Repuestos Retirados -->
   <div class="expandible-section">
     <div class="expandible-header" onclick="toggleExpandible(this)">
-      <span>🔧 Repuestos Retirados</span>
+      <span>Repuestos Retirados</span>
       <span class="toggle-icon">▼</span>
     </div>
     <div class="expandible-content">
@@ -373,12 +423,12 @@
   <!-- Trabajo Realizado -->
   <div class="expandible-section">
     <div class="expandible-header" onclick="toggleExpandible(this)">
-      <span>🛠️ Trabajo Realizado</span>
+      <span>Trabajo Realizado</span>
       <span class="toggle-icon">▼</span>
     </div>
     <div class="expandible-content">
       <div class="checkbox-grid" id="trabajosCheckboxContainer">
-        <!-- Se cargarán dinámicamente desde Google Sheets -->
+        <!-- Cargado dinámicamente -->
       </div>
       <div class="trabajo-descripcion" id="trabajoDescripcion">
         No hay trabajos seleccionados
@@ -426,167 +476,239 @@
   let cachedModelos = [];
   let cachedRepuestos = [];
   let cachedServicios = [];
-  let numeroActual = 0;
+  let numeroActual = 1;
+  let ordenesPendientes = [];
 
-  // Configuración inicial
-  const hoy = new Date();
-  const fechaDefault = hoy.toISOString().split('T')[0];
-  document.getElementById('fechaInput').value = fechaDefault;
-
-  // Cargar datos iniciales
-  window.addEventListener('DOMContentLoaded', async () => {
-    await cargarDatosIniciales();
+  // ========================
+  //  INICIO
+  // ========================
+  window.addEventListener('DOMContentLoaded', () => {
+    cargarDatosLocal();
+    actualizarIndicadorConexion();
+    cargarOrdenesPendientes();
+    setInterval(actualizarIndicadorConexion, 5000);
+    window.addEventListener('online', actualizarIndicadorConexion);
+    window.addEventListener('offline', actualizarIndicadorConexion);
   });
 
-  async function cargarDatosIniciales() {
+  function cargarDatosLocal() {
+    const saved = localStorage.getItem('realtechDB');
+    if (saved) {
+      const data = JSON.parse(saved);
+      cachedClients = data.clientes || [];
+      cachedMarcas = data.marcas || [];
+      cachedModelos = data.modelos || [];
+      cachedRepuestos = data.repuestos || [];
+      cachedServicios = data.servicios || [];
+      numeroActual = data.correlativo || 1;
+    }
+
+    document.getElementById('fechaInput').value = new Date().toISOString().split('T')[0];
+    document.getElementById('numeroCotizacion').textContent = `N° ${String(numeroActual).padStart(4, '0')}`;
+
+    actualizarDataLists();
+    cargarServiciosCheckboxes();
+  }
+
+  function guardarTodoLocalmente() {
+    const db = {
+      clientes: cachedClients,
+      marcas: cachedMarcas,
+      modelos: cachedModelos,
+      repuestos: cachedRepuestos,
+      servicios: cachedServicios,
+      correlativo: numeroActual
+    };
+    localStorage.setItem('realtechDB', JSON.stringify(db));
+  }
+
+  // ========================
+  //  ÓRDENES PENDIENTES
+  // ========================
+  function cargarOrdenesPendientes() {
+    const saved = localStorage.getItem('ordenesPendientes');
+    ordenesPendientes = saved ? JSON.parse(saved) : [];
+    actualizarBadgePendientes();
+  }
+
+  function guardarOrdenPendiente(orden) {
+    ordenesPendientes.push(orden);
+    localStorage.setItem('ordenesPendientes', JSON.stringify(ordenesPendientes));
+    actualizarBadgePendientes();
+  }
+
+  function eliminarOrdenPendiente(index) {
+    ordenesPendientes.splice(index, 1);
+    localStorage.setItem('ordenesPendientes', JSON.stringify(ordenesPendientes));
+    actualizarBadgePendientes();
+  }
+
+  function actualizarBadgePendientes() {
+    const badge = document.getElementById('pendientesBadge');
+    const btn = document.getElementById('btnSync');
+    if (ordenesPendientes.length > 0) {
+      badge.textContent = ordenesPendientes.length;
+      badge.style.display = 'inline';
+      btn.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+      btn.style.display = 'none';
+    }
+  }
+
+  // ========================
+  //  SINCRONIZACIÓN
+  // ========================
+  async function sincronizarDatosServidor() {
+    if (!navigator.onLine) return false;
     try {
       const response = await fetch(`${APPS_SCRIPT_URL}?action=loadData`);
-      const data = await response.json();
-      
-      if (data.success) {
-        cachedClients = data.clientes || [];
-        cachedMarcas = data.marcas || [];
-        cachedModelos = data.modelos || [];
-        cachedRepuestos = data.repuestos || [];
-        cachedServicios = data.servicios || [];
-        numeroActual = data.correlativo || 1;
-        
+      const remoto = await response.json();
+      if (remoto.success) {
+        cachedClients = unirSinDuplicados(cachedClients, remoto.clientes || [], 'nombre');
+        cachedMarcas   = unirSinDuplicados(cachedMarcas,   remoto.marcas || []);
+        cachedModelos  = unirSinDuplicados(cachedModelos,  remoto.modelos || []);
+        cachedRepuestos= unirSinDuplicados(cachedRepuestos,remoto.repuestos || []);
+        cachedServicios= remoto.servicios || cachedServicios;
+        numeroActual = Math.max(numeroActual, (remoto.correlativo || 0) + 1);
+        guardarTodoLocalmente();
         actualizarDataLists();
         cargarServiciosCheckboxes();
-        document.getElementById('numeroCotizacion').textContent = `N° ${String(numeroActual).padStart(4, '0')}`;
+        return true;
       }
-    } catch (error) {
-      console.error('Error cargando datos:', error);
-      mostrarNotificacion('⚠️ Error al cargar datos del servidor', 'error');
-    }
+    } catch (e) { console.warn('Error sincronizando datos base', e); }
+    return false;
   }
 
-  function actualizarDataLists() {
-    // Clientes
-    const clientesList = document.getElementById('clientes-list');
-    clientesList.innerHTML = cachedClients.map(c => `<option value="${c.nombre}">`).join('');
-    
-    // Marcas
-    const marcasList = document.getElementById('marcas-list');
-    marcasList.innerHTML = cachedMarcas.map(m => `<option value="${m}">`).join('');
-    
-    // Modelos
-    const modelosList = document.getElementById('modelos-list');
-    modelosList.innerHTML = cachedModelos.map(m => `<option value="${m}">`).join('');
-    
-    // Repuestos
-    const repuestosList = document.getElementById('repuestos-list');
-    repuestosList.innerHTML = cachedRepuestos.map(r => `<option value="${r}">`).join('');
-  }
-
-  function cargarServiciosCheckboxes() {
-    const container = document.getElementById('trabajosCheckboxContainer');
-    container.innerHTML = '';
-    
-    cachedServicios.forEach((servicio, index) => {
-      const div = document.createElement('div');
-      div.className = 'checkbox-item';
-      div.innerHTML = `
-        <input type="checkbox" id="trabajo${index}" value="${servicio}" onchange="actualizarTrabajoRealizado()">
-        <label for="trabajo${index}" style="text-transform: none; font-weight: normal;">${servicio}</label>
-      `;
-      container.appendChild(div);
+  function unirSinDuplicados(localArray, remotoArray, key = null) {
+    const set = new Set(localArray.map(i => key ? i[key] || i : i));
+    remotoArray.forEach(item => {
+      const valor = key ? item[key] || item : item;
+      if (!set.has(valor)) {
+        set.add(valor);
+        localArray.push(item);
+      }
     });
+    return localArray;
   }
 
-  function autocompletarCliente() {
-    const nombreInput = document.getElementById('clienteNombre').value;
-    const cliente = cachedClients.find(c => c.nombre === nombreInput);
-    
-    if (cliente) {
-      document.getElementById('clienteRut').value = cliente.rut || '';
-      document.getElementById('clienteDireccion').value = cliente.direccion || '';
-      document.getElementById('clienteCiudad').value = cliente.ciudad || '';
-      document.getElementById('clienteContacto').value = cliente.contacto || '';
-      document.getElementById('clienteEmail').value = cliente.email || '';
-      document.getElementById('clienteTelefono').value = cliente.telefono || '';
+  async function sincronizarPendientes() {
+    if (!navigator.onLine || ordenesPendientes.length === 0) return;
+    document.getElementById('btnSync').disabled = true;
+    document.getElementById('btnSync').textContent = 'Enviando...';
+
+    let enviadas = 0;
+    let errores = 0;
+
+    for (let i = 0; i < ordenesPendientes.length; i++) {
+      try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'saveOrden', data: ordenesPendientes[i] })
+        });
+        const result = await response.json();
+        if (result.success) {
+          enviadas++;
+          eliminarOrdenPendiente(i);
+          i--;
+        } else errores++;
+      } catch (e) { errores++; }
+    }
+
+    await sincronizarDatosServidor();
+
+    document.getElementById('btnSync').disabled = false;
+    document.getElementById('btnSync').textContent = 'Sincronizar';
+
+    if (enviadas > 0) mostrarNotificacion(`Enviadas ${enviadas} órdenes`, 'exito');
+    if (errores > 0) mostrarNotificacion(`${errores} órdenes fallidas`, 'error');
+  }
+
+  function actualizarIndicadorConexion() {
+    const bar = document.getElementById('statusBar');
+    const text = document.getElementById('statusText');
+    if (navigator.onLine) {
+      bar.classList.remove('offline');
+      text.textContent = 'Conectado';
+      sincronizarPendientes();
+    } else {
+      bar.classList.add('offline');
+      text.textContent = 'Sin conexión - Modo offline';
     }
   }
 
-  async function guardarNuevoCliente(clienteData) {
-    try {
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: 'addCliente',
-          data: clienteData
-        })
-      });
-      const result = await response.json();
-      if (result.success) {
-        cachedClients.push(clienteData);
-        actualizarDataLists();
-      }
-    } catch (error) {
-      console.error('Error guardando cliente:', error);
+  // ========================
+  //  GUARDAR ORDEN (offline-first)
+  // ========================
+  async function guardarOrden() {
+    const clienteNombre = document.getElementById('clienteNombre').value.trim();
+    if (!clienteNombre) {
+      mostrarNotificacion('Ingrese el nombre del cliente', 'error');
+      return;
     }
+
+    const clienteData = {
+      nombre: clienteNombre,
+      rut: document.getElementById('clienteRut').value.trim(),
+      direccion: document.getElementById('clienteDireccion').value.trim(),
+      ciudad: document.getElementById('clienteCiudad').value.trim(),
+      contacto: document.getElementById('clienteContacto').value.trim(),
+      email: document.getElementById('clienteEmail').value.trim(),
+      telefono: document.getElementById('clienteTelefono').value.trim()
+    };
+
+    if (!cachedClients.some(c => c.nombre === clienteNombre)) {
+      cachedClients.push(clienteData);
+      guardarTodoLocalmente();
+      actualizarDataLists();
+    }
+
+    const repuestosInstalados = [];
+    document.querySelectorAll('#repuestosInstaladosContainer .repuesto-row').forEach(row => {
+      const nombre = row.querySelector('.repuesto-nombre').value.trim();
+      const serie = row.querySelector('.repuesto-serie')?.value.trim() || '';
+      if (nombre) repuestosInstalados.push({nombre, serie});
+    });
+
+    const repuestosRetirados = [];
+    document.querySelectorAll('#repuestosRetiradosContainer .repuesto-row').forEach(row => {
+      const nombre = row.querySelector('.repuesto-retirado-nombre').value.trim();
+      const serie = row.querySelector('.repuesto-retirado-serie')?.value.trim() || '';
+      if (nombre) repuestosRetirados.push({nombre, serie});
+    });
+
+    const trabajosRealizados = Array.from(
+      document.querySelectorAll('#trabajosCheckboxContainer input[type="checkbox"]:checked')
+    ).map(cb => cb.value);
+
+    const ordenData = {
+      numero: numeroActual,
+      fecha: document.getElementById('fechaInput').value || new Date().toISOString().split('T')[0],
+      cliente: clienteData,
+      equipo: {
+        marca: document.getElementById('equipoMarca').value.trim(),
+        modelo: document.getElementById('equipoModelo').value.trim(),
+        serie: document.getElementById('equipoSerie').value.trim()
+      },
+      repuestosInstalados,
+      repuestosRetirados,
+      trabajosRealizados,
+      observaciones: document.getElementById('obs').value.trim()
+    };
+
+    guardarOrdenPendiente(ordenData);
+    numeroActual++;
+    document.getElementById('numeroCotizacion').textContent = `N° ${String(numeroActual).padStart(4, '0')}`;
+    guardarTodoLocalmente();
+
+    mostrarNotificacion(`Orden N°${String(numeroActual-1).padStart(4,'0')} guardada localmente`, 'exito');
+
+    if (navigator.onLine) await sincronizarPendientes();
   }
 
-  async function guardarNuevaMarca(marca) {
-    if (!marca || cachedMarcas.includes(marca)) return;
-    try {
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: 'addMarca',
-          data: marca
-        })
-      });
-      const result = await response.json();
-      if (result.success) {
-        cachedMarcas.push(marca);
-        actualizarDataLists();
-      }
-    } catch (error) {
-      console.error('Error guardando marca:', error);
-    }
-  }
-
-  async function guardarNuevoModelo(modelo) {
-    if (!modelo || cachedModelos.includes(modelo)) return;
-    try {
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: 'addModelo',
-          data: modelo
-        })
-      });
-      const result = await response.json();
-      if (result.success) {
-        cachedModelos.push(modelo);
-        actualizarDataLists();
-      }
-    } catch (error) {
-      console.error('Error guardando modelo:', error);
-    }
-  }
-
-  async function guardarNuevoRepuesto(repuesto) {
-    if (!repuesto || cachedRepuestos.includes(repuesto)) return;
-    try {
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: 'addRepuesto',
-          data: repuesto
-        })
-      });
-      const result = await response.json();
-      if (result.success) {
-        cachedRepuestos.push(repuesto);
-        actualizarDataLists();
-      }
-    } catch (error) {
-      console.error('Error guardando repuesto:', error);
-    }
-  }
-
+  // ========================
+  //  FUNCIONES AUXILIARES (igual que antes)
+  // ========================
   function mostrarNotificacion(mensaje, tipo = 'exito') {
     const notif = document.getElementById('notificacion');
     notif.textContent = mensaje;
@@ -603,61 +725,51 @@
     input.value = cuerpo ? `${cuerpo}-${dv}` : '';
   }
 
-  function agregarRepuestoInstalado() {
-    const container = document.getElementById('repuestosInstaladosContainer');
-    if (container.querySelectorAll('.repuesto-row').length >= 10) {
-      mostrarNotificacion('⚠️ Máximo 10 repuestos', 'error');
-      return;
+  function autocompletarCliente() {
+    const nombreInput = document.getElementById('clienteNombre').value;
+    const cliente = cachedClients.find(c => c.nombre === nombreInput);
+    if (cliente) {
+      document.getElementById('clienteRut').value = cliente.rut || '';
+      document.getElementById('clienteDireccion').value = cliente.direccion || '';
+      document.getElementById('clienteCiudad').value = cliente.ciudad || '';
+      document.getElementById('clienteContacto').value = cliente.contacto || '';
+      document.getElementById('clienteEmail').value = cliente.email || '';
+      document.getElementById('clienteTelefono').value = cliente.telefono || '';
     }
-    const div = document.createElement('div');
-    div.className = 'repuesto-row';
-    div.innerHTML = `
-      <div>
-        <label>Repuesto</label>
-        <input type="text" class="repuesto-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)">
-      </div>
-      <div>
-        <label>Serie (opcional)</label>
-        <input type="text" class="repuesto-serie" placeholder="N° Serie">
-      </div>
-      <button class="btn-borrar" onclick="this.parentElement.remove()">✕</button>
-    `;
-    container.appendChild(div);
   }
 
-  function agregarRepuestoRetirado() {
-    const container = document.getElementById('repuestosRetiradosContainer');
-    if (container.querySelectorAll('.repuesto-row').length >= 10) {
-      mostrarNotificacion('⚠️ Máximo 10 repuestos', 'error');
-      return;
-    }
-    const div = document.createElement('div');
-    div.className = 'repuesto-row';
-    div.innerHTML = `
-      <div>
-        <label>Repuesto</label>
-        <input type="text" class="repuesto-retirado-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)">
-      </div>
-      <div>
-        <label>Serie (opcional)</label>
-        <input type="text" class="repuesto-retirado-serie" placeholder="N° Serie">
-      </div>
-      <button class="btn-borrar" onclick="this.parentElement.remove()">✕</button>
-    `;
-    container.appendChild(div);
+  function guardarNuevaMarca(marca) { if (marca && !cachedMarcas.includes(marca)) { cachedMarcas.push(marca); guardarTodoLocalmente(); actualizarDataLists(); } }
+  function guardarNuevoModelo(modelo) { if (modelo && !cachedModelos.includes(modelo)) { cachedModelos.push(modelo); guardarTodoLocalmente(); actualizarDataLists(); } }
+  function guardarNuevoRepuesto(repuesto) { if (repuesto && !cachedRepuestos.includes(repuesto)) { cachedRepuestos.push(repuesto); guardarTodoLocalmente(); actualizarDataLists(); } }
+
+  function actualizarDataLists() {
+    document.getElementById('clientes-list').innerHTML = cachedClients.map(c => `<option value="${c.nombre}">`).join('');
+    document.getElementById('marcas-list').innerHTML = cachedMarcas.map(m => `<option value="${m}">`).join('');
+    document.getElementById('modelos-list').innerHTML = cachedModelos.map(m => `<option value="${m}">`).join('');
+    document.getElementById('repuestos-list').innerHTML = cachedRepuestos.map(r => `<option value="${r}">`).join('');
+  }
+
+  function cargarServiciosCheckboxes() {
+    const container = document.getElementById('trabajosCheckboxContainer');
+    container.innerHTML = '';
+    cachedServicios.forEach((servicio, index) => {
+      const div = document.createElement('div');
+      div.className = 'checkbox-item';
+      div.innerHTML = `<input type="checkbox" id="trabajo${index}" value="${servicio}" onchange="actualizarTrabajoRealizado()">
+                       <label for="trabajo${index}" style="text-transform:none;font-weight:normal;">${servicio}</label>`;
+      container.appendChild(div);
+    });
   }
 
   function actualizarTrabajoRealizado() {
-    const checkboxes = document.querySelectorAll('#trabajosCheckboxContainer input[type="checkbox"]:checked');
-    const descripcion = document.getElementById('trabajoDescripcion');
-    
-    if (checkboxes.length === 0) {
-      descripcion.textContent = 'No hay trabajos seleccionados';
-      descripcion.style.color = '#999';
+    const checked = document.querySelectorAll('#trabajosCheckboxContainer input[type="checkbox"]:checked');
+    const desc = document.getElementById('trabajoDescripcion');
+    if (checked.length === 0) {
+      desc.textContent = 'No hay trabajos seleccionados';
+      desc.style.color = '#999';
     } else {
-      const trabajos = Array.from(checkboxes).map(cb => cb.value);
-      descripcion.textContent = trabajos.join(', ');
-      descripcion.style.color = '#333';
+      desc.textContent = Array.from(checked).map(c => c.value).join(', ');
+      desc.style.color = '#333';
     }
   }
 
@@ -668,94 +780,30 @@
     icon.textContent = content.classList.contains('active') ? '▲' : '▼';
   }
 
-  async function guardarOrden() {
-    // Validaciones básicas
-    const clienteNombre = document.getElementById('clienteNombre').value.trim();
-    if (!clienteNombre) {
-      mostrarNotificacion('⚠️ Ingrese el nombre del cliente', 'error');
-      return;
-    }
+  function agregarRepuestoInstalado() {
+    const container = document.getElementById('repuestosInstaladosContainer');
+    if (container.querySelectorAll('.repuesto-row').length >= 10) { mostrarNotificacion('Máximo 10 repuestos', 'error'); return; }
+    const div = document.createElement('div');
+    div.className = 'repuesto-row';
+    div.innerHTML = `
+      <div><label>Repuesto</label><input type="text" class="repuesto-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)"></div>
+      <div><label>Serie</label><input type="text" class="repuesto-serie" placeholder="N° Serie"></div>
+      <button class="btn-borrar" onclick="this.parentElement.remove()">X</button>
+    `;
+    container.appendChild(div);
+  }
 
-    // Recopilar datos del cliente
-    const clienteData = {
-      nombre: clienteNombre,
-      rut: document.getElementById('clienteRut').value,
-      direccion: document.getElementById('clienteDireccion').value,
-      ciudad: document.getElementById('clienteCiudad').value,
-      contacto: document.getElementById('clienteContacto').value,
-      email: document.getElementById('clienteEmail').value,
-      telefono: document.getElementById('clienteTelefono').value
-    };
-
-    // Si es cliente nuevo, guardarlo
-    const clienteExiste = cachedClients.some(c => c.nombre === clienteNombre);
-    if (!clienteExiste) {
-      await guardarNuevoCliente(clienteData);
-    }
-
-    // Recopilar repuestos instalados
-    const repuestosInstalados = [];
-    document.querySelectorAll('#repuestosInstaladosContainer .repuesto-row').forEach(row => {
-      const nombre = row.querySelector('.repuesto-nombre').value.trim();
-      const serie = row.querySelector('.repuesto-serie').value.trim();
-      if (nombre) {
-        repuestosInstalados.push({ nombre, serie });
-      }
-    });
-
-    // Recopilar repuestos retirados
-    const repuestosRetirados = [];
-    document.querySelectorAll('#repuestosRetiradosContainer .repuesto-row').forEach(row => {
-      const nombre = row.querySelector('.repuesto-retirado-nombre').value.trim();
-      const serie = row.querySelector('.repuesto-retirado-serie').value.trim();
-      if (nombre) {
-        repuestosRetirados.push({ nombre, serie });
-      }
-    });
-
-    // Recopilar trabajos realizados
-    const trabajosRealizados = Array.from(
-      document.querySelectorAll('#trabajosCheckboxContainer input[type="checkbox"]:checked')
-    ).map(cb => cb.value);
-
-    // Datos de la orden
-    const ordenData = {
-      numero: numeroActual,
-      fecha: document.getElementById('fechaInput').value,
-      cliente: clienteData,
-      equipo: {
-        marca: document.getElementById('equipoMarca').value,
-        modelo: document.getElementById('equipoModelo').value,
-        serie: document.getElementById('equipoSerie').value
-      },
-      repuestosInstalados,
-      repuestosRetirados,
-      trabajosRealizados,
-      observaciones: document.getElementById('obs').value
-    };
-
-    try {
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: 'saveOrden',
-          data: ordenData
-        })
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        mostrarNotificacion('✅ Orden guardada exitosamente', 'exito');
-        numeroActual++;
-        document.getElementById('numeroCotizacion').textContent = `N° ${String(numeroActual).padStart(4, '0')}`;
-      } else {
-        mostrarNotificacion('❌ Error al guardar: ' + (result.error || 'Desconocido'), 'error');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      mostrarNotificacion('❌ Error de conexión', 'error');
-    }
+  function agregarRepuestoRetirado() {
+    const container = document.getElementById('repuestosRetiradosContainer');
+    if (container.querySelectorAll('.repuesto-row').length >= 10) { mostrarNotificacion('Máximo 10 repuestos', 'error'); return; }
+    const div = document.createElement('div');
+    div.className = 'repuesto-row';
+    div.innerHTML = `
+      <div><label>Repuesto</label><input type="text" class="repuesto-retirado-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)"></div>
+      <div><label>Serie</label><input type="text" class="repuesto-retirado-serie" placeholder="N° Serie"></div>
+      <button class="btn-borrar" onclick="this.parentElement.remove()">X</button>
+    `;
+    container.appendChild(div);
   }
 </script>
 </body>
