@@ -41,6 +41,13 @@
     justify-content: space-between;
     align-items: flex-end;
     flex-wrap: wrap;
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self' data: blob:; 
+               img-src 'self' data:; 
+               connect-src 'self' https://informes-realtech.realtech-spa.workers.dev; 
+               script-src 'self' 'unsafe-inline'; 
+               style-src 'self' 'unsafe-inline';">
+
   }
 
   .logo-area { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-grow: 1; }
