@@ -250,9 +250,26 @@
       box-shadow: none;
       border: 1px solid var(--border);
     }
-    .controls .btn-save { flex: 2; margin-left: 5px; order: 2; }
-    .controls .btn-blue { display: none; } /* Ocultar imprimir en móvil para ahorrar espacio */
-    .controls .btn-ghost { flex: 1; font-size: 11px; padding: 5px; } /* Botones de agregar pequeños */
+    .controls .btn-save { 
+        flex: 2; 
+        margin-left: 5px; 
+        order: 2; 
+        border: none; /* Asegurar que el botón principal no tenga borde adicional */
+    }
+    /* AJUSTE: Hacer visible el botón de Imprimir y darle un tamaño uniforme con los botones ghost */
+    .controls .btn-blue { 
+        flex: 1; /* Ocupa el mismo espacio que los ghost */
+        font-size: 11px; 
+        padding: 5px; 
+        order: 1; /* Posicionarlo antes de Guardar */
+        display: block; /* Asegurar que es visible */
+    }
+    .controls .btn-ghost { 
+        flex: 1; 
+        font-size: 11px; 
+        padding: 5px; 
+        order: 0; 
+    }
   }
 
   @media print {
@@ -347,8 +364,7 @@
           </div>
         </div>
       </div>
-      <div style="margin-top:8px" class="hide-mobile"><button class="btn-ghost" onclick="addRepInst()" style="padding:8px;border-radius:6px;cursor:pointer">+ Agregar repuesto</button></div>
-    </div>
+      </div>
   </section>
 
   <section>
@@ -370,8 +386,7 @@
           </div>
         </div>
       </div>
-      <div style="margin-top:8px" class="hide-mobile"><button class="btn-ghost" onclick="addRepRet()" style="padding:8px;border-radius:6px;cursor:pointer">+ Agregar repuesto</button></div>
-    </div>
+      </div>
   </section>
 
   <section>
@@ -414,15 +429,15 @@
 <div class="controls" role="region" aria-label="Controles">
   <button class="btn-ghost" onclick="addRepInst()">+ Rep. Inst</button>
   <button class="btn-ghost" onclick="addRepRet()">+ Rep. Ret</button>
-  <button class="btn-save" id="saveBtn" onclick="save()">GUARDAR</button>
   <button class="btn-blue" onclick="window.print()">Imprimir</button>
+  <button class="btn-save" id="saveBtn" onclick="save()">GUARDAR</button>
 </div>
 
 <script>
 /* ------------------ CONFIG ------------------ */
 const URL = 'https://informes-realtech.realtech-spa.workers.dev/';
 let isSyncing = false;
-let isSaving = false; // <<< [CORRECCIÓN 1] Bandera de concurrencia para save()
+let isSaving = false; 
 
 /* ------------------ IndexedDB Setup ------------------ */
 let db = null;
