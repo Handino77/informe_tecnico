@@ -1,810 +1,446 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Orden de Servicio Técnico - Realtech SpA</title>
-<link rel="icon" type="image/png" href="logo_realtech.png">
-
 <style>
-  /* --- ESTILOS BASE --- */
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0; 
-    margin: 0;
-    padding: 20px 0;
-    display: flex;
-    justify-content: center;
-  }
-
-  .documento {
-    background-color: white;
-    width: 95%;
-    max-width: 21.59cm;
-    min-height: 27.94cm;
-    padding: 0.8cm 1cm;
-    box-sizing: border-box;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; 
-    overflow: visible;
-  }
-
-  /* Barra de estado conexión */
-  .status-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: #004a99;
-    color: white;
-    font-size: 12px;
-    padding: 6px 12px;
-    text-align: center;
-    z-index: 1000;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .status-bar.offline { background: #cc0000; }
-  .sync-btn {
-    background: rgba(255,255,255,0.3);
-    border: none;
-    color: white;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 11px;
-    cursor: pointer;
-  }
-  .pendientes-count {
-    background: #ff9800;
-    color: white;
-    border-radius: 12px;
-    padding: 2px 8px;
-    font-weight: bold;
-    margin-left: 8px;
-  }
-
-  /* Header */
-  .header {
-    border-bottom: 2px solid #004a99;
-    padding-bottom: 8px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    flex-wrap: wrap;
-  }
-
-  .logo-area { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-grow: 1; }
-  .logo img { width: 75px; display: block; } 
-  
-  .empresa-info { font-size: 9px; color: #000; line-height: 1.2; }
-  .empresa-nombre { font-size: 13px; font-weight: bold; color: #004a99; display: block; }
-  .titulo-doc { text-align: right; }
-  .titulo-doc h1 { font-size: 16px; margin: 0; color: #004a99; }
-  .numero-cotizacion { font-size: 12px; font-weight: bold; color: #004a99; margin-bottom: 2px; }
-  .fecha-box { font-size: 9px; margin-top: 3px; font-weight: bold; color: #333; }
-  .fecha-box input {
-    border: none; background: transparent; font-size: 9px; font-weight: bold; 
-    color: #333; padding: 0; width: 90px; outline: none;
-  }
-
-  /* Títulos de Sección */
-  h2 {
-    font-size: 9px; background: #f0f0f0; padding: 3px 6px;
-    border-left: 3px solid #004a99; text-transform: uppercase;
-    color: #222; margin-bottom: 5px; margin-top: 8px;
-  }
-
-  /* Grid Cliente */
-  .grid-cliente {
-    display: grid; 
-    grid-template-columns: repeat(3, 1fr); 
-    gap: 4px 8px; 
-    margin-bottom: 8px;
-  }
-  .full-width { grid-column: 1 / -1; }
-  .two-col { grid-column: span 2; }
-
-  label {
-    display: block; font-size: 7px; font-weight: bold;
-    color: #004a99; margin-bottom: 1px; text-transform: uppercase;
-  }
-  input, textarea, select {
-    width: 100%; border: none; border-bottom: 1px solid #ccc;
-    padding: 2px 0; font-size: 10px; outline: none; background: transparent;
-  }
-
-  /* Secciones Expandibles */
-  .expandible-section {
-    margin-bottom: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .expandible-header {
-    background: #f5f5f5;
-    padding: 5px 8px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 9px;
-    font-weight: bold;
-    color: #004a99;
-  }
-  .expandible-header:hover { background: #e8e8e8; }
-  .expandible-content {
-    padding: 8px;
-    display: none;
-    background: #fafafa;
-  }
-  .expandible-content.active { display: block; }
-  
-  .repuesto-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr 30px;
-    gap: 5px;
-    margin-bottom: 5px;
-    align-items: end;
-  }
-  
-  .checkbox-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 4px;
-  }
-  .checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 9px;
-  }
-  .checkbox-item input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-  }
-  
-  .trabajo-descripcion {
-    grid-column: 1 / -1;
-    background: white;
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 3px;
-    min-height: 40px;
-    font-size: 9px;
-    margin-top: 5px;
-    color: #999;
-  }
-
-  /* Footer */
-  .footer-section { flex-shrink: 0; margin-top: 15px; }
-  .obs-section { margin-bottom: 15px; }
-  .obs-section textarea { min-height: 60px; font-size: 9px; resize: none; overflow: hidden; }
-  
-  .grid-firmas {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 10px;
-  }
-  
-  .firma-box {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .firma-box input {
-    margin-bottom: 40px;
-  }
-  
-  .firma-linea {
-    border-top: 1px solid #333;
-    padding-top: 5px;
-    text-align: center;
-    font-size: 8px;
-    color: #666;
-    font-weight: bold;
-  }
-
-  /* Botones */
-  .botonera { 
-    position: fixed; 
-    bottom: 15px; 
-    right: 15px; 
-    display: flex; 
-    gap: 8px; 
-    z-index: 100; 
-  }
-  button { 
-    padding: 8px 12px; cursor: pointer; border: none; border-radius: 4px; 
-    font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-    font-size: 11px;
-  }
-  .btn-azul { background: #004a99; color: white; }
-  .btn-gris { background: white; color: #333; }
-  .btn-guardar { background: #38a169; color: white; }
-  .btn-borrar { 
-    background: #cc0000; color: white; width: 20px; height: 20px; 
-    padding: 0; border-radius: 3px; font-size: 10px; 
-  }
-
-  /* Notificación */
-  .notificacion {
-    position: fixed;
-    top: 60px;
-    right: 20px;
-    padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    font-weight: bold;
-    z-index: 1000;
-    display: none;
-    animation: slideIn 0.3s ease-out;
-  }
-  .notificacion.exito { background: #38a169; color: white; }
-  .notificacion.error { background: #cc0000; color: white; }
-  
-  @keyframes slideIn {
-    from { transform: translateX(400px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-
-  /* Responsive */
-  @media (min-width: 769px) {
-    .documento {
-      padding: 0.8cm 1.2cm; 
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
-    .logo img { width: 85px; }
-    .empresa-info { font-size: 10px; }
-  }
-
-  /* Impresión */
-  @media print {
-    @page { margin: 0.5cm !important; size: letter; }
-    body { margin: 0; padding: 0; background: white; }
-    .documento {
-      width: 100%; 
-      box-shadow: none;
-      padding: 0.5cm 0.8cm !important; 
-      margin: 0;
-    }
-    .botonera, .btn-borrar, .notificacion, .status-bar { display: none !important; } 
-    input, textarea, select, .fecha-box input {
-      background: transparent !important; border: none !important; 
-      padding: 0 !important;
-    }
-    input::placeholder { color: transparent; }
-    h2, th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .expandible-content { display: block !important; }
-    .toggle-icon { display: none; }
-  }
+body{font-family:Arial,sans-serif;background:#f0f0f0;margin:0;padding:20px 0;display:flex;justify-content:center}
+.doc{background:#fff;width:95%;max-width:21.59cm;min-height:27.94cm;padding:.8cm 1cm;box-sizing:border-box;box-shadow:0 0 10px rgba(0,0,0,.1);position:relative}
+.status{position:fixed;top:0;left:0;right:0;background:#004a99;color:#fff;font-size:12px;padding:6px 12px;text-align:center;z-index:1000;display:flex;justify-content:space-between;align-items:center}
+.status.off{background:#c00}
+.sync-btn{background:rgba(255,255,255,.3);border:none;color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer}
+.badge{background:#f80;color:#fff;border-radius:12px;padding:2px 8px;font-weight:700;margin-left:8px}
+.hdr{border-bottom:2px solid #004a99;padding-bottom:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap}
+.logo-area{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-grow:1}
+.logo img{width:75px;display:block}
+.emp-info{font-size:9px;color:#000;line-height:1.2}
+.emp-name{font-size:13px;font-weight:700;color:#004a99;display:block}
+.titulo{text-align:right}
+.titulo h1{font-size:16px;margin:0;color:#004a99}
+.num{font-size:12px;font-weight:700;color:#004a99;margin-bottom:2px}
+.fecha{font-size:9px;margin-top:3px;font-weight:700;color:#333}
+.fecha input{border:none;background:transparent;font-size:9px;font-weight:700;color:#333;padding:0;width:90px;outline:none}
+h2{font-size:9px;background:#f0f0f0;padding:3px 6px;border-left:3px solid #004a99;text-transform:uppercase;color:#222;margin-bottom:5px;margin-top:8px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 8px;margin-bottom:8px}
+.full{grid-column:1/-1}
+.two{grid-column:span 2}
+label{display:block;font-size:7px;font-weight:700;color:#004a99;margin-bottom:1px;text-transform:uppercase}
+input,textarea,select{width:100%;border:none;border-bottom:1px solid #ccc;padding:2px 0;font-size:10px;outline:none;background:transparent}
+.exp{margin-bottom:8px;border:1px solid #ddd;border-radius:4px;overflow:hidden}
+.exp-hdr{background:#f5f5f5;padding:5px 8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:9px;font-weight:700;color:#004a99}
+.exp-hdr:hover{background:#e8e8e8}
+.exp-cnt{padding:8px;display:none;background:#fafafa}
+.exp-cnt.on{display:block}
+.rep-row{display:grid;grid-template-columns:2fr 1fr 30px;gap:5px;margin-bottom:5px;align-items:end}
+.chk-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+.chk-item{display:flex;align-items:center;gap:4px;font-size:9px}
+.chk-item input[type="checkbox"]{width:auto;margin:0}
+.trab-desc{grid-column:1/-1;background:#fff;padding:5px;border:1px solid #ddd;border-radius:3px;min-height:40px;font-size:9px;margin-top:5px;color:#999}
+.footer{flex-shrink:0;margin-top:15px}
+.obs{margin-bottom:15px}
+.obs textarea{min-height:60px;font-size:9px;resize:none;overflow:hidden}
+.firmas{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:10px}
+.firma-box{display:flex;flex-direction:column}
+.firma-box input{margin-bottom:40px}
+.firma-line{border-top:1px solid #333;padding-top:5px;text-align:center;font-size:8px;color:#666;font-weight:700}
+.btns{position:fixed;bottom:15px;right:15px;display:flex;gap:8px;z-index:100}
+button{padding:8px 12px;cursor:pointer;border:none;border-radius:4px;font-weight:700;box-shadow:0 2px 5px rgba(0,0,0,.2);font-size:11px}
+.btn-blue{background:#004a99;color:#fff}
+.btn-gray{background:#fff;color:#333}
+.btn-save{background:#38a169;color:#fff}
+.btn-del{background:#c00;color:#fff;width:20px;height:20px;padding:0;border-radius:3px;font-size:10px}
+.notif{position:fixed;top:60px;right:20px;padding:15px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.3);font-weight:700;z-index:1000;display:none;animation:slideIn .3s ease-out}
+.notif.ok{background:#38a169;color:#fff}
+.notif.err{background:#c00;color:#fff}
+@keyframes slideIn{from{transform:translateX(400px);opacity:0}to{transform:translateX(0);opacity:1}}
+@media print{@page{margin:.5cm!important;size:letter}body{margin:0;padding:0;background:#fff}.doc{width:100%;box-shadow:none;padding:.5cm .8cm!important;margin:0}.btns,.btn-del,.notif,.status{display:none!important}input,textarea,select,.fecha input{background:transparent!important;border:none!important;padding:0!important}input::placeholder{color:transparent}h2,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}.exp-cnt{display:block!important}.toggle-icon{display:none}}
 </style>
 </head>
 <body>
 
-<!-- Barra de estado conexión -->
-<div class="status-bar" id="statusBar">
-  <span id="statusText">Cargando estado de conexión...</span>
+<div class="status" id="status">
+  <span id="statusTxt">Cargando...</span>
   <div>
-    <span id="pendientesBadge" class="pendientes-count" style="display:none">0</span>
-    <button class="sync-btn" id="btnSync" onclick="sincronizarPendientes()" style="display:none">
-      Sincronizar
-    </button>
+    <span id="badge" class="badge" style="display:none">0</span>
+    <button class="sync-btn" id="syncBtn" onclick="sync()" style="display:none">Sincronizar</button>
   </div>
 </div>
 
-<div class="notificacion" id="notificacion"></div>
+<div class="notif" id="notif"></div>
 
-<div class="botonera">
-  <button class="btn-gris" onclick="agregarRepuestoInstalado()">+ Rep. Instalado</button>
-  <button class="btn-gris" onclick="agregarRepuestoRetirado()">+ Rep. Retirado</button>
-  <button class="btn-guardar" onclick="guardarOrden()">Guardar</button>
-  <button class="btn-azul" onclick="window.print()">Imprimir</button>
+<div class="btns">
+  <button class="btn-gray" onclick="addRepInst()">+ Rep. Instalado</button>
+  <button class="btn-gray" onclick="addRepRet()">+ Rep. Retirado</button>
+  <button class="btn-save" onclick="save()">Guardar</button>
+  <button class="btn-blue" onclick="window.print()">Imprimir</button>
 </div>
 
-<div class="documento">
-  
-  <div class="header">
+<div class="doc">
+  <div class="hdr">
     <div class="logo-area">
-      <div class="logo">
-        <img src="logo_realtech.png" alt="Logo" onerror="this.style.display='none'">
-      </div>
-      <div class="empresa-info">
-        <span class="empresa-nombre">Realtech SpA</span>
+      <div class="logo"><img src="logo_realtech.png" alt="Logo" onerror="this.style.display='none'"></div>
+      <div class="emp-info">
+        <span class="emp-name">Realtech SpA</span>
         <strong>RUT: 77.651.114-5</strong><br>
         Arturo Prat 780 of 203A, Temuco<br>
         realtech.spa@gmail.com | +56 9 3957 3029
       </div>
     </div>
-    <div class="titulo-doc">
-      <div class="numero-cotizacion" id="numeroCotizacion">N° 0001</div>
+    <div class="titulo">
+      <div class="num" id="num">N° 0001</div>
       <h1>Orden de Servicio Técnico</h1>
-      <div class="fecha-box">
-        Emisión: <input type="date" id="fechaInput">
-      </div>
+      <div class="fecha">Emisión: <input type="date" id="fecha"></div>
     </div>
   </div>
 
   <h2>Información del Cliente y Equipo</h2>
-  <div class="grid-cliente">
-    <div class="campo two-col">
-      <label>Cliente / Empresa</label>
-      <input type="text" id="clienteNombre" list="clientes-list" placeholder="Nombre del cliente..." onchange="autocompletarCliente()">
-    </div>
-    <div class="campo">
-      <label>RUT</label>
-      <input type="text" id="clienteRut" placeholder="XX.XXX.XXX-X" oninput="formatearRut(this)">
-    </div>
-    <div class="campo">
-      <label>Dirección</label>
-      <input type="text" id="clienteDireccion" placeholder="Dirección">
-    </div>
-    <div class="campo">
-      <label>Ciudad</label>
-      <input type="text" id="clienteCiudad" placeholder="Ciudad">
-    </div>
-    <div class="campo">
-      <label>Contacto</label>
-      <input type="text" id="clienteContacto" placeholder="Atención a...">
-    </div>
-    <div class="campo">
-      <label>Email</label>
-      <input type="text" id="clienteEmail" placeholder="correo@ejemplo.com">
-    </div>
-    <div class="campo">
-      <label>Teléfono</label>
-      <input type="text" id="clienteTelefono" placeholder="+56 9...">
-    </div>
-    <div class="campo">
-      <label>Marca Equipo</label>
-      <input type="text" id="equipoMarca" list="marcas-list" placeholder="Seleccionar marca..." onchange="guardarNuevaMarca(this.value)">
-    </div>
-    <div class="campo">
-      <label>Modelo</label>
-      <input type="text" id="equipoModelo" list="modelos-list" placeholder="Modelo" onchange="guardarNuevoModelo(this.value)">
-    </div>
-    <div class="campo">
-      <label>Serie</label>
-      <input type="text" id="equipoSerie" placeholder="N° de serie">
-    </div>
+  <div class="grid">
+    <div class="two"><label>Cliente / Empresa</label><input type="text" id="cliNom" list="cli-list" placeholder="Nombre del cliente..." onchange="autocomplete()"></div>
+    <div><label>RUT</label><input type="text" id="cliRut" placeholder="XX.XXX.XXX-X" oninput="fmtRut(this)"></div>
+    <div><label>Dirección</label><input type="text" id="cliDir" placeholder="Dirección"></div>
+    <div><label>Ciudad</label><input type="text" id="cliCiu" placeholder="Ciudad"></div>
+    <div><label>Contacto</label><input type="text" id="cliCon" placeholder="Atención a..."></div>
+    <div><label>Email</label><input type="text" id="cliMail" placeholder="correo@ejemplo.com"></div>
+    <div><label>Teléfono</label><input type="text" id="cliTel" placeholder="+56 9..."></div>
+    <div><label>Marca Equipo</label><input type="text" id="eqMarca" list="marca-list" placeholder="Marca..." onchange="saveMarca(this.value)"></div>
+    <div><label>Modelo</label><input type="text" id="eqMod" list="modelo-list" placeholder="Modelo" onchange="saveModelo(this.value)"></div>
+    <div><label>Serie</label><input type="text" id="eqSer" placeholder="N° de serie"></div>
   </div>
 
-  <!-- Repuestos Instalados -->
-  <div class="expandible-section">
-    <div class="expandible-header" onclick="toggleExpandible(this)">
-      <span>Repuestos Instalados</span>
-      <span class="toggle-icon">▼</span>
-    </div>
-    <div class="expandible-content">
-      <div id="repuestosInstaladosContainer">
-        <div class="repuesto-row">
-          <div>
-            <label>Repuesto</label>
-            <input type="text" class="repuesto-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)">
-          </div>
-          <div>
-            <label>Serie (opcional)</label>
-            <input type="text" class="repuesto-serie" placeholder="N° Serie">
-          </div>
+  <div class="exp">
+    <div class="exp-hdr" onclick="toggle(this)"><span>Repuestos Instalados</span><span class="toggle-icon">▼</span></div>
+    <div class="exp-cnt">
+      <div id="repInst">
+        <div class="rep-row">
+          <div><label>Repuesto</label><input type="text" class="rep-nom" list="rep-list" placeholder="Nombre del repuesto" onchange="saveRep(this.value)"></div>
+          <div><label>Serie (opcional)</label><input type="text" class="rep-ser" placeholder="N° Serie"></div>
           <div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Repuestos Retirados -->
-  <div class="expandible-section">
-    <div class="expandible-header" onclick="toggleExpandible(this)">
-      <span>Repuestos Retirados</span>
-      <span class="toggle-icon">▼</span>
-    </div>
-    <div class="expandible-content">
-      <div id="repuestosRetiradosContainer">
-        <div class="repuesto-row">
-          <div>
-            <label>Repuesto</label>
-            <input type="text" class="repuesto-retirado-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)">
-          </div>
-          <div>
-            <label>Serie (opcional)</label>
-            <input type="text" class="repuesto-retirado-serie" placeholder="N° Serie">
-          </div>
+  <div class="exp">
+    <div class="exp-hdr" onclick="toggle(this)"><span>Repuestos Retirados</span><span class="toggle-icon">▼</span></div>
+    <div class="exp-cnt">
+      <div id="repRet">
+        <div class="rep-row">
+          <div><label>Repuesto</label><input type="text" class="rep-ret-nom" list="rep-list" placeholder="Nombre del repuesto" onchange="saveRep(this.value)"></div>
+          <div><label>Serie (opcional)</label><input type="text" class="rep-ret-ser" placeholder="N° Serie"></div>
           <div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Trabajo Realizado -->
-  <div class="expandible-section">
-    <div class="expandible-header" onclick="toggleExpandible(this)">
-      <span>Trabajo Realizado</span>
-      <span class="toggle-icon">▼</span>
-    </div>
-    <div class="expandible-content">
-      <div class="checkbox-grid" id="trabajosCheckboxContainer">
-        <!-- Cargado dinámicamente -->
-      </div>
-      <div class="trabajo-descripcion" id="trabajoDescripcion">
-        No hay trabajos seleccionados
-      </div>
+  <div class="exp">
+    <div class="exp-hdr" onclick="toggle(this)"><span>Trabajo Realizado</span><span class="toggle-icon">▼</span></div>
+    <div class="exp-cnt">
+      <div class="chk-grid" id="trabChk"></div>
+      <div class="trab-desc" id="trabDesc">No hay trabajos seleccionados</div>
     </div>
   </div>
 
   <h2>Observaciones Adicionales</h2>
-  <div class="obs-section">
-    <textarea id="obs" placeholder="Detalles de la atención que no están registrados en los menús desplegables..."></textarea>
-  </div>
+  <div class="obs"><textarea id="obs" placeholder="Detalles de la atención..."></textarea></div>
 
-  <div class="footer-section">
+  <div class="footer">
     <h2>Firmas y Conformidad</h2>
-    <div class="grid-firmas">
+    <div class="firmas">
       <div class="firma-box">
         <label>Nombre Técnico</label>
-        <input type="text" id="nombreTecnico" placeholder="Nombre completo del técnico">
-        <div class="firma-linea">
-          <span>Firma Técnico</span>
-        </div>
+        <input type="text" id="nomTec" placeholder="Nombre completo del técnico">
+        <div class="firma-line"><span>Firma Técnico</span></div>
       </div>
       <div class="firma-box">
         <label>Nombre Cliente</label>
-        <input type="text" id="nombreClienteFirma" placeholder="Nombre completo del cliente">
-        <div class="firma-linea">
-          <span>Firma Cliente</span>
-        </div>
+        <input type="text" id="nomCliFirma" placeholder="Nombre completo del cliente">
+        <div class="firma-line"><span>Firma Cliente</span></div>
       </div>
     </div>
   </div>
-
 </div>
 
-<datalist id="repuestos-list"></datalist>
-<datalist id="clientes-list"></datalist>
-<datalist id="marcas-list"></datalist>
-<datalist id="modelos-list"></datalist>
+<datalist id="rep-list"></datalist>
+<datalist id="cli-list"></datalist>
+<datalist id="marca-list"></datalist>
+<datalist id="modelo-list"></datalist>
 
 <script>
-  const APPS_SCRIPT_URL = 'https://informes-realtech.realtech-spa.workers.dev/';
+const URL='https://script.google.com/macros/s/AKfycbz1ThVoL2EOjk7jYiZeoQd8eNY6w8sAFeeMxTVNwL6b7uLrSgk93vQnEps5v6ucAXdU/exec';
+let cli=[],marcas=[],modelos=[],reps=[],servs=[],num=1,pend=[];
+
+window.addEventListener('DOMContentLoaded',async()=>{
+  await loadLocal();
+  updateStatus();
+  setInterval(updateStatus,5000);
+  window.addEventListener('online',updateStatus);
+  window.addEventListener('offline',updateStatus);
+});
+
+async function loadLocal(){
+  try{
+    const d=await window.storage.get('realtechDB');
+    if(d){
+      const data=JSON.parse(d.value);
+      cli=data.cli||[];marcas=data.marcas||[];modelos=data.modelos||[];
+      reps=data.reps||[];servs=data.servs||[];num=data.num||1;
+    }
+  }catch(e){console.log('No hay datos previos');}
   
-  let cachedClients = [];
-  let cachedMarcas = [];
-  let cachedModelos = [];
-  let cachedRepuestos = [];
-  let cachedServicios = [];
-  let numeroActual = 1;
-  let ordenesPendientes = [];
+  try{
+    const p=await window.storage.get('ordenesPend');
+    pend=p?JSON.parse(p.value):[];
+  }catch(e){pend=[];}
+  
+  document.getElementById('fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('num').textContent=`N° ${String(num).padStart(4,'0')}`;
+  updateLists();
+  loadServChk();
+  updateBadge();
+}
 
-  // ========================
-  //  INICIO
-  // ========================
-  window.addEventListener('DOMContentLoaded', () => {
-    cargarDatosLocal();
-    actualizarIndicadorConexion();
-    cargarOrdenesPendientes();
-    setInterval(actualizarIndicadorConexion, 5000);
-    window.addEventListener('online', actualizarIndicadorConexion);
-    window.addEventListener('offline', actualizarIndicadorConexion);
+async function saveAll(){
+  const db={cli,marcas,modelos,reps,servs,num};
+  await window.storage.set('realtechDB',JSON.stringify(db));
+}
+
+async function savePend(orden){
+  pend.push(orden);
+  await window.storage.set('ordenesPend',JSON.stringify(pend));
+  updateBadge();
+}
+
+async function delPend(i){
+  pend.splice(i,1);
+  await window.storage.set('ordenesPend',JSON.stringify(pend));
+  updateBadge();
+}
+
+function updateBadge(){
+  const badge=document.getElementById('badge');
+  const btn=document.getElementById('syncBtn');
+  if(pend.length>0){
+    badge.textContent=pend.length;
+    badge.style.display='inline';
+    btn.style.display='inline-block';
+  }else{
+    badge.style.display='none';
+    btn.style.display='none';
+  }
+}
+
+async function syncServer(){
+  if(!navigator.onLine)return false;
+  try{
+    const r=await fetch(`${URL}?action=loadData`);
+    const data=await r.json();
+    if(data.success){
+      cli=merge(cli,data.cli||[],'nombre');
+      marcas=merge(marcas,data.marcas||[]);
+      modelos=merge(modelos,data.modelos||[]);
+      reps=merge(reps,data.reps||[]);
+      servs=data.servs||servs;
+      num=Math.max(num,(data.num||0)+1);
+      await saveAll();
+      updateLists();
+      loadServChk();
+      return true;
+    }
+  }catch(e){console.warn('Error sync',e);}
+  return false;
+}
+
+function merge(local,remote,key=null){
+  const set=new Set(local.map(i=>key?i[key]||i:i));
+  remote.forEach(item=>{
+    const val=key?item[key]||item:item;
+    if(!set.has(val)){set.add(val);local.push(item);}
   });
+  return local;
+}
 
-  function cargarDatosLocal() {
-    const saved = localStorage.getItem('realtechDB');
-    if (saved) {
-      const data = JSON.parse(saved);
-      cachedClients = data.clientes || [];
-      cachedMarcas = data.marcas || [];
-      cachedModelos = data.modelos || [];
-      cachedRepuestos = data.repuestos || [];
-      cachedServicios = data.servicios || [];
-      numeroActual = data.correlativo || 1;
-    }
-
-    document.getElementById('fechaInput').value = new Date().toISOString().split('T')[0];
-    document.getElementById('numeroCotizacion').textContent = `N° ${String(numeroActual).padStart(4, '0')}`;
-
-    actualizarDataLists();
-    cargarServiciosCheckboxes();
+async function sync(){
+  if(!navigator.onLine||pend.length===0)return;
+  document.getElementById('syncBtn').disabled=true;
+  document.getElementById('syncBtn').textContent='Enviando...';
+  let ok=0,err=0;
+  for(let i=0;i<pend.length;i++){
+    try{
+      const r=await fetch(URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'saveOrden',data:pend[i]})
+      });
+      const res=await r.json();
+      if(res.success){ok++;await delPend(i);i--;}else err++;
+    }catch(e){err++;}
   }
+  await syncServer();
+  document.getElementById('syncBtn').disabled=false;
+  document.getElementById('syncBtn').textContent='Sincronizar';
+  if(ok>0)notif(`Enviadas ${ok} órdenes`,'ok');
+  if(err>0)notif(`${err} órdenes fallidas`,'err');
+}
 
-  function guardarTodoLocalmente() {
-    const db = {
-      clientes: cachedClients,
-      marcas: cachedMarcas,
-      modelos: cachedModelos,
-      repuestos: cachedRepuestos,
-      servicios: cachedServicios,
-      correlativo: numeroActual
-    };
-    localStorage.setItem('realtechDB', JSON.stringify(db));
+function updateStatus(){
+  const bar=document.getElementById('status');
+  const txt=document.getElementById('statusTxt');
+  if(navigator.onLine){
+    bar.classList.remove('off');
+    txt.textContent='Conectado';
+    sync();
+  }else{
+    bar.classList.add('off');
+    txt.textContent='Sin conexión - Modo offline';
   }
+}
 
-  // ========================
-  //  ÓRDENES PENDIENTES
-  // ========================
-  function cargarOrdenesPendientes() {
-    const saved = localStorage.getItem('ordenesPendientes');
-    ordenesPendientes = saved ? JSON.parse(saved) : [];
-    actualizarBadgePendientes();
+async function save(){
+  const cliNom=document.getElementById('cliNom').value.trim();
+  if(!cliNom){notif('Ingrese el nombre del cliente','err');return;}
+  
+  const cliData={
+    nombre:cliNom,
+    rut:document.getElementById('cliRut').value.trim(),
+    direccion:document.getElementById('cliDir').value.trim(),
+    ciudad:document.getElementById('cliCiu').value.trim(),
+    contacto:document.getElementById('cliCon').value.trim(),
+    email:document.getElementById('cliMail').value.trim(),
+    telefono:document.getElementById('cliTel').value.trim()
+  };
+  
+  if(!cli.some(c=>c.nombre===cliNom)){
+    cli.push(cliData);
+    await saveAll();
+    updateLists();
   }
+  
+  const repInst=[];
+  document.querySelectorAll('#repInst .rep-row').forEach(row=>{
+    const nom=row.querySelector('.rep-nom').value.trim();
+    const ser=row.querySelector('.rep-ser')?.value.trim()||'';
+    if(nom)repInst.push({nombre:nom,serie:ser});
+  });
+  
+  const repRet=[];
+  document.querySelectorAll('#repRet .rep-row').forEach(row=>{
+    const nom=row.querySelector('.rep-ret-nom').value.trim();
+    const ser=row.querySelector('.rep-ret-ser')?.value.trim()||'';
+    if(nom)repRet.push({nombre:nom,serie:ser});
+  });
+  
+  const trab=Array.from(document.querySelectorAll('#trabChk input:checked')).map(cb=>cb.value);
+  
+  const orden={
+    numero:num,
+    fecha:document.getElementById('fecha').value||new Date().toISOString().split('T')[0],
+    cliente:cliData,
+    equipo:{
+      marca:document.getElementById('eqMarca').value.trim(),
+      modelo:document.getElementById('eqMod').value.trim(),
+      serie:document.getElementById('eqSer').value.trim()
+    },
+    repInst,repRet,trab,
+    obs:document.getElementById('obs').value.trim()
+  };
+  
+  await savePend(orden);
+  num++;
+  document.getElementById('num').textContent=`N° ${String(num).padStart(4,'0')}`;
+  await saveAll();
+  notif(`Orden N°${String(num-1).padStart(4,'0')} guardada`,'ok');
+  if(navigator.onLine)await sync();
+}
 
-  function guardarOrdenPendiente(orden) {
-    ordenesPendientes.push(orden);
-    localStorage.setItem('ordenesPendientes', JSON.stringify(ordenesPendientes));
-    actualizarBadgePendientes();
+function notif(msg,tipo='ok'){
+  const n=document.getElementById('notif');
+  n.textContent=msg;
+  n.className=`notif ${tipo}`;
+  n.style.display='block';
+  setTimeout(()=>n.style.display='none',4000);
+}
+
+function fmtRut(input){
+  let v=input.value.replace(/[^0-9kK]/g,'');
+  if(v.length===0)return;
+  let c=v.slice(0,-1).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  let dv=v.slice(-1).toUpperCase();
+  input.value=c?`${c}-${dv}`:'';
+}
+
+function autocomplete(){
+  const nom=document.getElementById('cliNom').value;
+  const c=cli.find(x=>x.nombre===nom);
+  if(c){
+    document.getElementById('cliRut').value=c.rut||'';
+    document.getElementById('cliDir').value=c.direccion||'';
+    document.getElementById('cliCiu').value=c.ciudad||'';
+    document.getElementById('cliCon').value=c.contacto||'';
+    document.getElementById('cliMail').value=c.email||'';
+    document.getElementById('cliTel').value=c.telefono||'';
   }
+}
 
-  function eliminarOrdenPendiente(index) {
-    ordenesPendientes.splice(index, 1);
-    localStorage.setItem('ordenesPendientes', JSON.stringify(ordenesPendientes));
-    actualizarBadgePendientes();
+async function saveMarca(m){if(m&&!marcas.includes(m)){marcas.push(m);await saveAll();updateLists();}}
+async function saveModelo(m){if(m&&!modelos.includes(m)){modelos.push(m);await saveAll();updateLists();}}
+async function saveRep(r){if(r&&!reps.includes(r)){reps.push(r);await saveAll();updateLists();}}
+
+function updateLists(){
+  document.getElementById('cli-list').innerHTML=cli.map(c=>`<option value="${c.nombre}">`).join('');
+  document.getElementById('marca-list').innerHTML=marcas.map(m=>`<option value="${m}">`).join('');
+  document.getElementById('modelo-list').innerHTML=modelos.map(m=>`<option value="${m}">`).join('');
+  document.getElementById('rep-list').innerHTML=reps.map(r=>`<option value="${r}">`).join('');
+}
+
+function loadServChk(){
+  const c=document.getElementById('trabChk');
+  c.innerHTML='';
+  servs.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='chk-item';
+    d.innerHTML=`<input type="checkbox" id="t${i}" value="${s}" onchange="updateTrab()"><label for="t${i}" style="text-transform:none;font-weight:normal;">${s}</label>`;
+    c.appendChild(d);
+  });
+}
+
+function updateTrab(){
+  const chk=document.querySelectorAll('#trabChk input:checked');
+  const desc=document.getElementById('trabDesc');
+  if(chk.length===0){
+    desc.textContent='No hay trabajos seleccionados';
+    desc.style.color='#999';
+  }else{
+    desc.textContent=Array.from(chk).map(c=>c.value).join(', ');
+    desc.style.color='#333';
   }
+}
 
-  function actualizarBadgePendientes() {
-    const badge = document.getElementById('pendientesBadge');
-    const btn = document.getElementById('btnSync');
-    if (ordenesPendientes.length > 0) {
-      badge.textContent = ordenesPendientes.length;
-      badge.style.display = 'inline';
-      btn.style.display = 'inline-block';
-    } else {
-      badge.style.display = 'none';
-      btn.style.display = 'none';
-    }
-  }
+function toggle(hdr){
+  const cnt=hdr.nextElementSibling;
+  const icon=hdr.querySelector('.toggle-icon');
+  cnt.classList.toggle('on');
+  icon.textContent=cnt.classList.contains('on')?'▲':'▼';
+}
 
-  // ========================
-  //  SINCRONIZACIÓN
-  // ========================
-  async function sincronizarDatosServidor() {
-    if (!navigator.onLine) return false;
-    try {
-      const response = await fetch(`${APPS_SCRIPT_URL}?action=loadData`);
-      const remoto = await response.json();
-      if (remoto.success) {
-        cachedClients = unirSinDuplicados(cachedClients, remoto.clientes || [], 'nombre');
-        cachedMarcas   = unirSinDuplicados(cachedMarcas,   remoto.marcas || []);
-        cachedModelos  = unirSinDuplicados(cachedModelos,  remoto.modelos || []);
-        cachedRepuestos= unirSinDuplicados(cachedRepuestos,remoto.repuestos || []);
-        cachedServicios= remoto.servicios || cachedServicios;
-        numeroActual = Math.max(numeroActual, (remoto.correlativo || 0) + 1);
-        guardarTodoLocalmente();
-        actualizarDataLists();
-        cargarServiciosCheckboxes();
-        return true;
-      }
-    } catch (e) { console.warn('Error sincronizando datos base', e); }
-    return false;
-  }
+function addRepInst(){
+  const c=document.getElementById('repInst');
+  if(c.querySelectorAll('.rep-row').length>=10){notif('Máximo 10 repuestos','err');return;}
+  const d=document.createElement('div');
+  d.className='rep-row';
+  d.innerHTML=`<div><label>Repuesto</label><input type="text" class="rep-nom" list="rep-list" placeholder="Nombre" onchange="saveRep(this.value)"></div><div><label>Serie</label><input type="text" class="rep-ser" placeholder="N° Serie"></div><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+  c.appendChild(d);
+}
 
-  function unirSinDuplicados(localArray, remotoArray, key = null) {
-    const set = new Set(localArray.map(i => key ? i[key] || i : i));
-    remotoArray.forEach(item => {
-      const valor = key ? item[key] || item : item;
-      if (!set.has(valor)) {
-        set.add(valor);
-        localArray.push(item);
-      }
-    });
-    return localArray;
-  }
-
-  async function sincronizarPendientes() {
-    if (!navigator.onLine || ordenesPendientes.length === 0) return;
-    document.getElementById('btnSync').disabled = true;
-    document.getElementById('btnSync').textContent = 'Enviando...';
-
-    let enviadas = 0;
-    let errores = 0;
-
-    for (let i = 0; i < ordenesPendientes.length; i++) {
-      try {
-        const response = await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'saveOrden', data: ordenesPendientes[i] })
-        });
-        const result = await response.json();
-        if (result.success) {
-          enviadas++;
-          eliminarOrdenPendiente(i);
-          i--;
-        } else errores++;
-      } catch (e) { errores++; }
-    }
-
-    await sincronizarDatosServidor();
-
-    document.getElementById('btnSync').disabled = false;
-    document.getElementById('btnSync').textContent = 'Sincronizar';
-
-    if (enviadas > 0) mostrarNotificacion(`Enviadas ${enviadas} órdenes`, 'exito');
-    if (errores > 0) mostrarNotificacion(`${errores} órdenes fallidas`, 'error');
-  }
-
-  function actualizarIndicadorConexion() {
-    const bar = document.getElementById('statusBar');
-    const text = document.getElementById('statusText');
-    if (navigator.onLine) {
-      bar.classList.remove('offline');
-      text.textContent = 'Conectado';
-      sincronizarPendientes();
-    } else {
-      bar.classList.add('offline');
-      text.textContent = 'Sin conexión - Modo offline';
-    }
-  }
-
-  // ========================
-  //  GUARDAR ORDEN (offline-first)
-  // ========================
-  async function guardarOrden() {
-    const clienteNombre = document.getElementById('clienteNombre').value.trim();
-    if (!clienteNombre) {
-      mostrarNotificacion('Ingrese el nombre del cliente', 'error');
-      return;
-    }
-
-    const clienteData = {
-      nombre: clienteNombre,
-      rut: document.getElementById('clienteRut').value.trim(),
-      direccion: document.getElementById('clienteDireccion').value.trim(),
-      ciudad: document.getElementById('clienteCiudad').value.trim(),
-      contacto: document.getElementById('clienteContacto').value.trim(),
-      email: document.getElementById('clienteEmail').value.trim(),
-      telefono: document.getElementById('clienteTelefono').value.trim()
-    };
-
-    if (!cachedClients.some(c => c.nombre === clienteNombre)) {
-      cachedClients.push(clienteData);
-      guardarTodoLocalmente();
-      actualizarDataLists();
-    }
-
-    const repuestosInstalados = [];
-    document.querySelectorAll('#repuestosInstaladosContainer .repuesto-row').forEach(row => {
-      const nombre = row.querySelector('.repuesto-nombre').value.trim();
-      const serie = row.querySelector('.repuesto-serie')?.value.trim() || '';
-      if (nombre) repuestosInstalados.push({nombre, serie});
-    });
-
-    const repuestosRetirados = [];
-    document.querySelectorAll('#repuestosRetiradosContainer .repuesto-row').forEach(row => {
-      const nombre = row.querySelector('.repuesto-retirado-nombre').value.trim();
-      const serie = row.querySelector('.repuesto-retirado-serie')?.value.trim() || '';
-      if (nombre) repuestosRetirados.push({nombre, serie});
-    });
-
-    const trabajosRealizados = Array.from(
-      document.querySelectorAll('#trabajosCheckboxContainer input[type="checkbox"]:checked')
-    ).map(cb => cb.value);
-
-    const ordenData = {
-      numero: numeroActual,
-      fecha: document.getElementById('fechaInput').value || new Date().toISOString().split('T')[0],
-      cliente: clienteData,
-      equipo: {
-        marca: document.getElementById('equipoMarca').value.trim(),
-        modelo: document.getElementById('equipoModelo').value.trim(),
-        serie: document.getElementById('equipoSerie').value.trim()
-      },
-      repuestosInstalados,
-      repuestosRetirados,
-      trabajosRealizados,
-      observaciones: document.getElementById('obs').value.trim()
-    };
-
-    guardarOrdenPendiente(ordenData);
-    numeroActual++;
-    document.getElementById('numeroCotizacion').textContent = `N° ${String(numeroActual).padStart(4, '0')}`;
-    guardarTodoLocalmente();
-
-    mostrarNotificacion(`Orden N°${String(numeroActual-1).padStart(4,'0')} guardada localmente`, 'exito');
-
-    if (navigator.onLine) await sincronizarPendientes();
-  }
-
-  // ========================
-  //  FUNCIONES AUXILIARES (igual que antes)
-  // ========================
-  function mostrarNotificacion(mensaje, tipo = 'exito') {
-    const notif = document.getElementById('notificacion');
-    notif.textContent = mensaje;
-    notif.className = `notificacion ${tipo}`;
-    notif.style.display = 'block';
-    setTimeout(() => notif.style.display = 'none', 4000);
-  }
-
-  function formatearRut(input) {
-    let valor = input.value.replace(/[^0-9kK]/g, '');
-    if (valor.length === 0) return;
-    let cuerpo = valor.slice(0, -1).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    let dv = valor.slice(-1).toUpperCase();
-    input.value = cuerpo ? `${cuerpo}-${dv}` : '';
-  }
-
-  function autocompletarCliente() {
-    const nombreInput = document.getElementById('clienteNombre').value;
-    const cliente = cachedClients.find(c => c.nombre === nombreInput);
-    if (cliente) {
-      document.getElementById('clienteRut').value = cliente.rut || '';
-      document.getElementById('clienteDireccion').value = cliente.direccion || '';
-      document.getElementById('clienteCiudad').value = cliente.ciudad || '';
-      document.getElementById('clienteContacto').value = cliente.contacto || '';
-      document.getElementById('clienteEmail').value = cliente.email || '';
-      document.getElementById('clienteTelefono').value = cliente.telefono || '';
-    }
-  }
-
-  function guardarNuevaMarca(marca) { if (marca && !cachedMarcas.includes(marca)) { cachedMarcas.push(marca); guardarTodoLocalmente(); actualizarDataLists(); } }
-  function guardarNuevoModelo(modelo) { if (modelo && !cachedModelos.includes(modelo)) { cachedModelos.push(modelo); guardarTodoLocalmente(); actualizarDataLists(); } }
-  function guardarNuevoRepuesto(repuesto) { if (repuesto && !cachedRepuestos.includes(repuesto)) { cachedRepuestos.push(repuesto); guardarTodoLocalmente(); actualizarDataLists(); } }
-
-  function actualizarDataLists() {
-    document.getElementById('clientes-list').innerHTML = cachedClients.map(c => `<option value="${c.nombre}">`).join('');
-    document.getElementById('marcas-list').innerHTML = cachedMarcas.map(m => `<option value="${m}">`).join('');
-    document.getElementById('modelos-list').innerHTML = cachedModelos.map(m => `<option value="${m}">`).join('');
-    document.getElementById('repuestos-list').innerHTML = cachedRepuestos.map(r => `<option value="${r}">`).join('');
-  }
-
-  function cargarServiciosCheckboxes() {
-    const container = document.getElementById('trabajosCheckboxContainer');
-    container.innerHTML = '';
-    cachedServicios.forEach((servicio, index) => {
-      const div = document.createElement('div');
-      div.className = 'checkbox-item';
-      div.innerHTML = `<input type="checkbox" id="trabajo${index}" value="${servicio}" onchange="actualizarTrabajoRealizado()">
-                       <label for="trabajo${index}" style="text-transform:none;font-weight:normal;">${servicio}</label>`;
-      container.appendChild(div);
-    });
-  }
-
-  function actualizarTrabajoRealizado() {
-    const checked = document.querySelectorAll('#trabajosCheckboxContainer input[type="checkbox"]:checked');
-    const desc = document.getElementById('trabajoDescripcion');
-    if (checked.length === 0) {
-      desc.textContent = 'No hay trabajos seleccionados';
-      desc.style.color = '#999';
-    } else {
-      desc.textContent = Array.from(checked).map(c => c.value).join(', ');
-      desc.style.color = '#333';
-    }
-  }
-
-  function toggleExpandible(header) {
-    const content = header.nextElementSibling;
-    const icon = header.querySelector('.toggle-icon');
-    content.classList.toggle('active');
-    icon.textContent = content.classList.contains('active') ? '▲' : '▼';
-  }
-
-  function agregarRepuestoInstalado() {
-    const container = document.getElementById('repuestosInstaladosContainer');
-    if (container.querySelectorAll('.repuesto-row').length >= 10) { mostrarNotificacion('Máximo 10 repuestos', 'error'); return; }
-    const div = document.createElement('div');
-    div.className = 'repuesto-row';
-    div.innerHTML = `
-      <div><label>Repuesto</label><input type="text" class="repuesto-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)"></div>
-      <div><label>Serie</label><input type="text" class="repuesto-serie" placeholder="N° Serie"></div>
-      <button class="btn-borrar" onclick="this.parentElement.remove()">X</button>
-    `;
-    container.appendChild(div);
-  }
-
-  function agregarRepuestoRetirado() {
-    const container = document.getElementById('repuestosRetiradosContainer');
-    if (container.querySelectorAll('.repuesto-row').length >= 10) { mostrarNotificacion('Máximo 10 repuestos', 'error'); return; }
-    const div = document.createElement('div');
-    div.className = 'repuesto-row';
-    div.innerHTML = `
-      <div><label>Repuesto</label><input type="text" class="repuesto-retirado-nombre" list="repuestos-list" placeholder="Nombre del repuesto" onchange="guardarNuevoRepuesto(this.value)"></div>
-      <div><label>Serie</label><input type="text" class="repuesto-retirado-serie" placeholder="N° Serie"></div>
-      <button class="btn-borrar" onclick="this.parentElement.remove()">X</button>
-    `;
-    container.appendChild(div);
-  }
+function addRepRet(){
+  const c=document.getElementById('repRet');
+  if(c.querySelectorAll('.rep-row').length>=10){notif('Máximo 10 repuestos','err');return;}
+  const d=document.createElement('div');
+  d.className='rep-row';
+  d.innerHTML=`<div><label>Repuesto</label><input type="text" class="rep-ret-nom" list="rep-list" placeholder="Nombre" onchange="saveRep(this.value)"></div><div><label>Serie</label><input type="text" class="rep-ret-ser" placeholder="N° Serie"></div><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+  c.appendChild(d);
+}
 </script>
 </body>
 </html>
