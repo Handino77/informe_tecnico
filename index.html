@@ -117,6 +117,22 @@
     text-transform: uppercase;
   }
 
+  /* Botón para añadir repuestos dentro de la sección */
+  .btn-section-add {
+    background: #fff;
+    border: 1px solid var(--border);
+    color: var(--blue);
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    width: 100%;
+    margin-top: 15px;
+    transition: background 0.2s;
+  }
+  .btn-section-add:hover { background: var(--muted); }
+
   /* Bloques expandibles y Repuestos */
   .exp { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; }
   .exp-hdr { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
@@ -187,7 +203,6 @@
   .controls button:active { transform: scale(0.96); }
   .btn-save { background: var(--accent); color: #fff; }
   .btn-blue { background: var(--blue); color: #fff; }
-  .btn-ghost { background: #fff; border: 1px solid var(--border) !important; color: var(--text); }
 
   /* Status Bar */
   .statusbar {
@@ -248,33 +263,25 @@
       font-size: 13px;
       min-width: auto;
       box-shadow: none;
-      border: 1px solid var(--border);
     }
     .controls .btn-save { 
         flex: 2; 
         margin-left: 5px; 
         order: 2; 
-        border: none; /* Asegurar que el botón principal no tenga borde adicional */
+        border: none; 
     }
-    /* AJUSTE: Hacer visible el botón de Imprimir y darle un tamaño uniforme con los botones ghost */
     .controls .btn-blue { 
-        flex: 1; /* Ocupa el mismo espacio que los ghost */
-        font-size: 11px; 
-        padding: 5px; 
-        order: 1; /* Posicionarlo antes de Guardar */
-        display: block; /* Asegurar que es visible */
-    }
-    .controls .btn-ghost { 
         flex: 1; 
-        font-size: 11px; 
-        padding: 5px; 
-        order: 0; 
+        font-size: 13px;
+        padding: 12px;
+        order: 1;
+        display: block; 
     }
   }
 
   @media print {
     body, .container { background: #fff; margin: 0; padding: 0; box-shadow: none; width: 100%; max-width: 100%; }
-    .controls, .statusbar { display: none !important; }
+    .controls, .statusbar, .btn-section-add { display: none !important; }
     .section-title h2 { background: none; border: none; padding-left: 0; color: #000; border-bottom: 2px solid #000; }
     input, textarea, select { border: none; padding: 0; font-family: inherit; font-size: 12px; height: auto; }
     .rep-row { border: none; padding: 0; margin-bottom: 5px; grid-template-columns: 2fr 1fr 0px; }
@@ -364,7 +371,8 @@
           </div>
         </div>
       </div>
-      </div>
+      <button type="button" class="btn-section-add" onclick="addRepInst()">+ Agregar Repuesto Instalado</button>
+    </div>
   </section>
 
   <section>
@@ -386,7 +394,8 @@
           </div>
         </div>
       </div>
-      </div>
+      <button type="button" class="btn-section-add" onclick="addRepRet()">+ Agregar Repuesto Retirado</button>
+    </div>
   </section>
 
   <section>
@@ -427,8 +436,6 @@
 <datalist id="tech-list"></datalist>
 
 <div class="controls" role="region" aria-label="Controles">
-  <button class="btn-ghost" onclick="addRepInst()">+ Rep. Inst</button>
-  <button class="btn-ghost" onclick="addRepRet()">+ Rep. Ret</button>
   <button class="btn-blue" onclick="window.print()">Imprimir</button>
   <button class="btn-save" id="saveBtn" onclick="save()">GUARDAR</button>
 </div>
