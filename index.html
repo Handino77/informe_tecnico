@@ -430,7 +430,8 @@ let appState = {
   techName: null // Nombre del técnico
 };
 
-const req = indexedDB.open('RealtechDB', 3);
+// CLAVE: Se incrementa la versión a 4 para forzar la creación del store 'tecnicos'
+const req = indexedDB.open('RealtechDB', 4);
 
 req.onupgradeneeded = (e) => {
   const idb = e.target.result;
@@ -441,7 +442,7 @@ req.onupgradeneeded = (e) => {
   if (!idb.objectStoreNames.contains('servicios')) idb.createObjectStore('servicios', { keyPath: 'id', autoIncrement: true });
   if (!idb.objectStoreNames.contains('ordenesPend')) idb.createObjectStore('ordenesPend', { keyPath: 'id', autoIncrement: true });
   if (!idb.objectStoreNames.contains('config')) idb.createObjectStore('config', { keyPath: 'key' });
-  // CLAVE: Nuevo store para técnicos
+  // Nuevo store para técnicos
   if (!idb.objectStoreNames.contains('tecnicos')) idb.createObjectStore('tecnicos', { keyPath: 'id' });
 };
 
@@ -532,7 +533,7 @@ function notif(msg, type='ok'){
   setTimeout(()=> updateStatus(), 3500);
 }
 
-// CLAVE: Muestra el número compuesto [ID_Técnico][Folio]
+// Muestra el número compuesto [ID_Técnico][Folio]
 function renderNum(){
   const numPad = String(appState.folio).padStart(4,'0');
   const techPad = appState.techId ? String(appState.techId).padStart(2,'0') : 'XX';
@@ -546,7 +547,7 @@ async function initApp(){
   // set today's date if empty
   if(!document.getElementById('fecha').value) document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
 
-  // CLAVE: Evento de selección de Técnico
+  // Evento de selección de Técnico
   document.getElementById('nomTec').addEventListener('change', onTechSelect);
   document.getElementById('cliNom').addEventListener('change', onClientSelect);
   document.getElementById('cliNom').addEventListener('input', ()=>{/* allow typing */});
@@ -578,7 +579,7 @@ async function initApp(){
   renderNum();
 }
 
-// CLAVE: Manejador al seleccionar técnico
+// Manejador al seleccionar técnico
 async function onTechSelect() {
   const name = this.value.trim();
   const techList = await dbGetAll('tecnicos');
@@ -601,11 +602,12 @@ async function onTechSelect() {
   }
 }
 
-// CLAVE: Carga el folio específico de un técnico
+// Carga el folio específico de un técnico
 async function loadTechFolio(techId) {
     if (!techId) return;
     const key = `folio_${techId}`;
     const cfg = await dbGet('config', key);
+    // Si no hay configuración para este técnico, empezar en 1 (o el valor guardado)
     appState.folio = cfg ? (cfg.value || 1) : 1;
     renderNum();
 }
@@ -622,7 +624,7 @@ async function loadLists(){
   document.getElementById('marca-list').innerHTML = marcas.map(m => `<option value="${escapeHtml(m.nombre)}">`).join('');
   document.getElementById('modelo-list').innerHTML = modelos.map(m => `<option value="${escapeHtml(m.nombre)}">`).join('');
   document.getElementById('rep-list').innerHTML = reps.map(r => `<option value="${escapeHtml(r.nombre)}">`).join('');
-  // CLAVE: Llenar datalist de técnicos
+  // Llenar datalist de técnicos
   document.getElementById('tech-list').innerHTML = tecnicos.map(t => `<option value="${escapeHtml(t.nombre)}">`).join(''); 
 }
 
@@ -634,8 +636,10 @@ async function loadServices(){
     const d = document.createElement('div');
     d.className = 'chk-item';
     const id = `srv-${s.id || i}`;
-    d.innerHTML = `<input type="checkbox" id="${id}" value="${s.value || s}" onchange="updateTrab()">
-                   <label for="${id}" style="margin:0;font-weight:500;width:100%">${escapeHtml(s.value || s)}</label>`;
+    // Si 's' es un objeto {value: 'Servicio'}, usa s.value. Si es solo un string 'Servicio', usa s.
+    const serviceValue = s.value || s; 
+    d.innerHTML = `<input type="checkbox" id="${id}" value="${serviceValue}" onchange="updateTrab()">
+                   <label for="${id}" style="margin:0;font-weight:500;width:100%">${escapeHtml(serviceValue)}</label>`;
     container.appendChild(d);
   });
   updateTrab();
@@ -765,7 +769,7 @@ async function save(){
 
   // Equipo
   const orden = {
-    // CLAVE: Usamos el folio compuesto
+    // Usamos el folio compuesto
     numero: correlativoCompleto, 
     fecha: document.getElementById('fecha').value || new Date().toISOString().split('T')[0],
     cliente: cliData,
@@ -798,7 +802,7 @@ async function save(){
   // Save order to ordenesPend (offline queue)
   await dbAdd('ordenesPend', orden);
 
-  // CLAVE: Incremento y persistencia del número ESPECÍFICO DEL TÉCNICO
+  // Incremento y persistencia del número ESPECÍFICO DEL TÉCNICO
   appState.folio++;
   const newFolioKey = `folio_${appState.techId}`;
   await dbSet('config', { key: newFolioKey, value: appState.folio });
@@ -879,12 +883,12 @@ async function syncServer(){
   if(!navigator.onLine) { showStatus('Offline'); return; }
   try {
     showStatus('Actualizando...');
-    // CLAVE: Enviamos el ID del técnico actual al servidor
+    // Enviamos el ID del técnico actual al servidor
     const r = await fetch(`${URL}?action=loadData&techId=${appState.techId || ''}`);
     const data = await r.json();
     if(!data.success){ showStatus('Sin datos server'); return; }
 
-    // 1. CLAVE: Cargar y actualizar técnicos
+    // 1. Cargar y actualizar técnicos
     if(Array.isArray(data.tecnicos)) { 
       await dbDelAll('tecnicos'); // Limpiar para evitar duplicados si se actualizan IDs
       for(const t of data.tecnicos) await dbSet('tecnicos', t); 
@@ -901,16 +905,16 @@ async function syncServer(){
     if(Array.isArray(data.modelos)) for(const m of data.modelos) await dbSet('modelos',{nombre:m});
     if(Array.isArray(data.reps)) for(const r of data.reps) await dbSet('repuestos',{nombre:r});
     if(Array.isArray(data.servs)){
-      const old = await dbGetAll('servicios');
-      for(const o of old) { if(o.id) await dbDelete('servicios', o.id); }
+      await dbDelAll('servicios'); // Limpiar la lista de servicios antes de volver a agregar
       for(const s of data.servs) await dbAdd('servicios', { value: s });
     }
     
-    // 3. CLAVE: Corregir el correlativo específico del técnico actual
+    // 3. Corregir el correlativo específico del técnico actual
     if(appState.techId && data.lastNumTech){
         const serverNum = parseInt(data.lastNumTech, 10);
         const folioKey = `folio_${appState.techId}`;
         
+        // Si el número del servidor es válido y es mayor o igual al que tengo localmente
         if(!isNaN(serverNum) && serverNum >= appState.folio){
            appState.folio = serverNum + 1;
            await dbSet('config', { key: folioKey, value: appState.folio });
