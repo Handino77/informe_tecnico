@@ -430,7 +430,7 @@ let appState = {
   techName: null // Nombre del técnico
 };
 
-const req = indexedDB.open('RealtechDB', 2);
+const req = indexedDB.open('RealtechDB', 3);
 
 req.onupgradeneeded = (e) => {
   const idb = e.target.result;
