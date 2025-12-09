@@ -282,7 +282,7 @@
       <p>RUT: 77.651.114-5 — Arturo Prat 780 of 203A, Temuco<br>realtech.spa@gmail.com</p>
     </div>
     <div class="meta">
-      <div class="num" id="num">N° 0001</div>
+      <div class="num" id="num">N° XXXX</div> 
       <div class="fecha">Emisión: <input type="date" id="fecha" /></div>
     </div>
   </header>
@@ -343,7 +343,7 @@
             <input type="text" class="rep-ser" placeholder="N° Serie">
           </div>
           <div style="align-self:center">
-            <button class="btn-del" onclick="this.parentElement.parentElement.remove()">Eliminar</button>
+            <button class="btn-del" onclick="this.closest('.rep-row').remove()">Eliminar</button>
           </div>
         </div>
       </div>
@@ -366,7 +366,7 @@
             <input type="text" class="rep-ret-ser" placeholder="N° Serie">
           </div>
           <div style="align-self:center">
-            <button class="btn-del" onclick="this.parentElement.parentElement.remove()">Eliminar</button>
+            <button class="btn-del" onclick="this.closest('.rep-row').remove()">Eliminar</button>
           </div>
         </div>
       </div>
@@ -393,7 +393,7 @@
     <div class="firmas">
       <div>
         <label>Nombre Técnico</label>
-        <input type="text" id="nomTec" placeholder="Nombre completo">
+        <input type="text" id="nomTec" list="tech-list" placeholder="Nombre completo">
         <div class="firma-line">Firma Técnico</div>
       </div>
       <div>
@@ -409,6 +409,7 @@
 <datalist id="cli-list"></datalist>
 <datalist id="marca-list"></datalist>
 <datalist id="modelo-list"></datalist>
+<datalist id="tech-list"></datalist>
 
 <div class="controls" role="region" aria-label="Controles">
   <button class="btn-ghost" onclick="addRepInst()">+ Rep. Inst</button>
@@ -419,12 +420,14 @@
 
 <script>
 /* ------------------ CONFIG ------------------ */
-/* Reemplaza la URL si cambias tu Apps Script */
 const URL = 'https://informes-realtech.realtech-spa.workers.dev/';
+
 /* ------------------ IndexedDB Setup ------------------ */
 let db = null;
 let appState = {
-  num: 1
+  folio: 1, // Folio simple para el técnico actual (ej: 6)
+  techId: null, // ID del técnico (ej: 1)
+  techName: null // Nombre del técnico
 };
 
 const req = indexedDB.open('RealtechDB', 2);
@@ -438,6 +441,8 @@ req.onupgradeneeded = (e) => {
   if (!idb.objectStoreNames.contains('servicios')) idb.createObjectStore('servicios', { keyPath: 'id', autoIncrement: true });
   if (!idb.objectStoreNames.contains('ordenesPend')) idb.createObjectStore('ordenesPend', { keyPath: 'id', autoIncrement: true });
   if (!idb.objectStoreNames.contains('config')) idb.createObjectStore('config', { keyPath: 'key' });
+  // CLAVE: Nuevo store para técnicos
+  if (!idb.objectStoreNames.contains('tecnicos')) idb.createObjectStore('tecnicos', { keyPath: 'id' });
 };
 
 req.onsuccess = (e) => {
@@ -496,6 +501,14 @@ function dbDelete(store, key){
     } catch (e) { reject(e); }
   });
 }
+// NUEVO: Función para eliminar todos los registros de una tienda (útil para actualizar listas maestras)
+function dbDelAll(store){
+  return new Promise((resolve) => {
+    const request = tx(store, 'readwrite').clear();
+    request.onsuccess = () => resolve(true);
+    request.onerror = () => resolve(false);
+  });
+}
 
 /* ------------------ UI helpers ------------------ */
 function showStatus(text, isError=false){
@@ -505,6 +518,7 @@ function showStatus(text, isError=false){
   el.textContent = text;
   el.style.color = isError ? 'var(--danger)' : 'inherit';
   if(isError){
+    // Si hay error, solo mostrar texto y ocultar badge/sync
     badge.style.display='none';
     syncBtn.style.display='none';
   }
@@ -518,32 +532,82 @@ function notif(msg, type='ok'){
   setTimeout(()=> updateStatus(), 3500);
 }
 
+// CLAVE: Muestra el número compuesto [ID_Técnico][Folio]
+function renderNum(){
+  const numPad = String(appState.folio).padStart(4,'0');
+  const techPad = appState.techId ? String(appState.techId).padStart(2,'0') : 'XX';
+  
+  document.getElementById('num').textContent = `N° ${techPad}${numPad}`; 
+}
+
 /* ------------------ App init ------------------ */
 async function initApp(){
-  // load config
-  const cfg = await dbGet('config', 'num');
-  appState.num = cfg ? (cfg.value || 1) : 1;
-  document.getElementById('num').textContent = `N° ${String(appState.num).padStart(4,'0')}`;
+  
   // set today's date if empty
   if(!document.getElementById('fecha').value) document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
 
-  // wire events
+  // CLAVE: Evento de selección de Técnico
+  document.getElementById('nomTec').addEventListener('change', onTechSelect);
   document.getElementById('cliNom').addEventListener('change', onClientSelect);
   document.getElementById('cliNom').addEventListener('input', ()=>{/* allow typing */});
   document.getElementById('syncBtn').addEventListener('click', sync);
 
+  // Intentar cargar el último técnico y su folio si ya están guardados
+  const lastTech = await dbGet('config', 'lastTech');
+  if (lastTech && lastTech.id) {
+    appState.techId = lastTech.id;
+    appState.techName = lastTech.name;
+    document.getElementById('nomTec').value = lastTech.name;
+    await loadTechFolio(appState.techId);
+  }
+  
   // load data from local DB
   await loadLists();
   await loadServices();
   await renderPendingBadge();
 
-  // try to sync from server to pull masters
+  // try to sync from server to pull masters (incluye lista de técnicos y folios)
   syncServer();
 
   // connectivity events
   window.addEventListener('online', () => { updateStatus(); sync(); });
   window.addEventListener('offline', updateStatus);
   updateStatus();
+  
+  // Inicializa el número compuesto (puede ser N° XX0001 si no hay técnico)
+  renderNum();
+}
+
+// CLAVE: Manejador al seleccionar técnico
+async function onTechSelect() {
+  const name = this.value.trim();
+  const techList = await dbGetAll('tecnicos');
+  // Buscar el técnico por nombre para obtener su ID
+  const selectedTech = techList.find(t => t.nombre === name);
+
+  if (selectedTech) {
+    appState.techId = selectedTech.id;
+    appState.techName = selectedTech.nombre;
+    
+    // Guardar el último técnico usado en la configuración
+    await dbSet('config', { key: 'lastTech', id: appState.techId, name: appState.techName });
+    await loadTechFolio(appState.techId);
+  } else {
+    // Si el nombre no coincide, resetear el folio al genérico
+    appState.techId = null;
+    appState.folio = 1;
+    renderNum();
+    if(name) notif('Técnico no reconocido. Sincronice la lista maestra.', 'err');
+  }
+}
+
+// CLAVE: Carga el folio específico de un técnico
+async function loadTechFolio(techId) {
+    if (!techId) return;
+    const key = `folio_${techId}`;
+    const cfg = await dbGet('config', key);
+    appState.folio = cfg ? (cfg.value || 1) : 1;
+    renderNum();
 }
 
 /* ------------------ Load lists for datalist and services ------------------ */
@@ -552,11 +616,14 @@ async function loadLists(){
   const marcas = await dbGetAll('marcas');
   const modelos = await dbGetAll('modelos');
   const reps = await dbGetAll('repuestos');
+  const tecnicos = await dbGetAll('tecnicos'); // NUEVO
 
   document.getElementById('cli-list').innerHTML = clientes.map(c => `<option value="${escapeHtml(c.nombre)}">`).join('');
   document.getElementById('marca-list').innerHTML = marcas.map(m => `<option value="${escapeHtml(m.nombre)}">`).join('');
   document.getElementById('modelo-list').innerHTML = modelos.map(m => `<option value="${escapeHtml(m.nombre)}">`).join('');
   document.getElementById('rep-list').innerHTML = reps.map(r => `<option value="${escapeHtml(r.nombre)}">`).join('');
+  // CLAVE: Llenar datalist de técnicos
+  document.getElementById('tech-list').innerHTML = tecnicos.map(t => `<option value="${escapeHtml(t.nombre)}">`).join(''); 
 }
 
 async function loadServices(){
@@ -609,7 +676,6 @@ function addRepInst(){
   if(rows >= 20){ notif('Máximo 20 repuestos', 'err'); return; }
   const d = document.createElement('div');
   d.className = 'rep-row';
-  // Nota: Mantenemos estructura HTML interna para no romper CSS nuevo
   d.innerHTML = `<div><label>Repuesto</label><input type="text" class="rep-nom" list="rep-list" placeholder="Nombre repuesto"></div>
                  <div><label>Serie</label><input type="text" class="rep-ser" placeholder="N° Serie"></div>
                  <div style="align-self:center"><button class="btn-del" onclick="this.closest('.rep-row').remove()">Eliminar</button></div>`;
@@ -628,21 +694,12 @@ function addRepRet(){
 }
 
 /* ------------------ Save / Persist functions ------------------ */
-function fmtRutInput(input){
-  let v = input.replace(/[^0-9kK]/g,'');
-  if(v.length === 0) return '';
-  let c = v.slice(0,-1).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
-  let dv = v.slice(-1).toUpperCase();
-  return c ? `${c}-${dv}` : '';
-}
-
 async function saveClienteIfNew(cliObj){
   if(!cliObj || !cliObj.nombre) return;
   const exists = await dbGet('clientes', cliObj.nombre);
   await dbSet('clientes', Object.assign({}, exists || {}, cliObj));
   await loadLists();
 }
-
 async function saveMarcaIfNew(marca){
   if(!marca) return;
   const exists = await dbGet('marcas', marca);
@@ -664,8 +721,18 @@ async function saveRepIfNew(r){
 
 /* ------------------ Save order (offline-first) ------------------ */
 async function save(){
+  if (!appState.techId) {
+    notif('Debe seleccionar su Nombre Técnico para generar el folio.', 'err');
+    return;
+  }
+  
   const cliNom = document.getElementById('cliNom').value.trim();
   if(!cliNom){ notif('Ingrese el nombre del cliente', 'err'); return; }
+
+  // 1. Construir el folio compuesto
+  const folioActual = String(appState.folio).padStart(4,'0');
+  const techPrefijo = String(appState.techId).padStart(2,'0');
+  const correlativoCompleto = techPrefijo + folioActual; // Ej: 010006
 
   // Prepare client object & persist if new
   const cliData = {
@@ -679,15 +746,13 @@ async function save(){
   };
   await saveClienteIfNew(cliData);
 
-  // Collect repuestos instalados
+  // Collect repuestos
   const repInst = Array.from(document.querySelectorAll('#repInst .rep-row')).map(r => {
     return {
       nombre: (r.querySelector('.rep-nom')?.value || '').trim(),
       serie: (r.querySelector('.rep-ser')?.value || '').trim()
     };
   }).filter(x => x.nombre);
-
-  // Repuestos retirados
   const repRet = Array.from(document.querySelectorAll('#repRet .rep-row')).map(r => {
     return {
       nombre: (r.querySelector('.rep-ret-nom')?.value || '').trim(),
@@ -700,7 +765,8 @@ async function save(){
 
   // Equipo
   const orden = {
-    numero: appState.num,
+    // CLAVE: Usamos el folio compuesto
+    numero: correlativoCompleto, 
     fecha: document.getElementById('fecha').value || new Date().toISOString().split('T')[0],
     cliente: cliData,
     equipo: {
@@ -715,7 +781,12 @@ async function save(){
     },
     repInst, repRet, trab,
     obs: document.getElementById('obs').value.trim(),
-    extra: { tecnico: document.getElementById('nomTec').value.trim(), clienteFirma: document.getElementById('nomCliFirma').value.trim() }
+    extra: { 
+      tecnico: appState.techName, 
+      clienteFirma: document.getElementById('nomCliFirma').value.trim(),
+      idTecnico: appState.techId, // Guardamos el ID por si se necesita en el backend
+      folioTecnico: appState.folio // Guardamos el folio simple (ej: 6)
+    }
   };
 
   // Save reuso: add marca/modelo/repuestos to master lists
@@ -727,13 +798,27 @@ async function save(){
   // Save order to ordenesPend (offline queue)
   await dbAdd('ordenesPend', orden);
 
-  // increment and persist number
-  appState.num++;
-  await dbSet('config', { key: 'num', value: appState.num });
-  document.getElementById('num').textContent = `N° ${String(appState.num).padStart(4,'0')}`;
+  // CLAVE: Incremento y persistencia del número ESPECÍFICO DEL TÉCNICO
+  appState.folio++;
+  const newFolioKey = `folio_${appState.techId}`;
+  await dbSet('config', { key: newFolioKey, value: appState.folio });
+  
+  // Update UI
+  renderNum();
 
-  notif(`Orden N°${String(orden.numero).padStart(4,'0')} guardada`, 'ok');
+  notif(`Orden N°${correlativoCompleto} guardada`, 'ok');
   renderPendingBadge();
+  
+  // Limpiar campos (excepto fecha y técnico)
+  document.querySelectorAll('input:not(#fecha):not(#nomTec):not(#num), textarea, select').forEach(i => {
+    if(i.type === 'select-one') i.value = ''; else i.value = '';
+  });
+  document.querySelectorAll('#repInst .rep-row, #repRet .rep-row').forEach((r, i) => { 
+    if (i > 0) r.remove(); // Deja solo la primera fila vacía
+    r.querySelectorAll('input').forEach(i => i.value = '');
+  });
+  document.querySelectorAll('#trabChk input').forEach(c => c.checked = false);
+  updateTrab();
 
   // Try sync immediately if online
   if(navigator.onLine) await sync();
@@ -794,27 +879,44 @@ async function syncServer(){
   if(!navigator.onLine) { showStatus('Offline'); return; }
   try {
     showStatus('Actualizando...');
-    const r = await fetch(`${URL}?action=loadData`);
+    // CLAVE: Enviamos el ID del técnico actual al servidor
+    const r = await fetch(`${URL}?action=loadData&techId=${appState.techId || ''}`);
     const data = await r.json();
     if(!data.success){ showStatus('Sin datos server'); return; }
 
-    // merge clients
+    // 1. CLAVE: Cargar y actualizar técnicos
+    if(Array.isArray(data.tecnicos)) { 
+      await dbDelAll('tecnicos'); // Limpiar para evitar duplicados si se actualizan IDs
+      for(const t of data.tecnicos) await dbSet('tecnicos', t); 
+    }
+    
+    // 2. Cargar otras listas
     if(Array.isArray(data.cli)) {
       for(const c of data.cli){
         if(!c || !c.nombre) continue;
         await dbSet('clientes', c);
       }
     }
-
-    // marcas, modelos, reps, servs
     if(Array.isArray(data.marcas)) for(const m of data.marcas) await dbSet('marcas',{nombre:m});
     if(Array.isArray(data.modelos)) for(const m of data.modelos) await dbSet('modelos',{nombre:m});
     if(Array.isArray(data.reps)) for(const r of data.reps) await dbSet('repuestos',{nombre:r});
     if(Array.isArray(data.servs)){
-      // override services: clear existing services and set new ones
       const old = await dbGetAll('servicios');
       for(const o of old) { if(o.id) await dbDelete('servicios', o.id); }
       for(const s of data.servs) await dbAdd('servicios', { value: s });
+    }
+    
+    // 3. CLAVE: Corregir el correlativo específico del técnico actual
+    if(appState.techId && data.lastNumTech){
+        const serverNum = parseInt(data.lastNumTech, 10);
+        const folioKey = `folio_${appState.techId}`;
+        
+        if(!isNaN(serverNum) && serverNum >= appState.folio){
+           appState.folio = serverNum + 1;
+           await dbSet('config', { key: folioKey, value: appState.folio });
+           renderNum();
+           notif(`Folio de ${appState.techName} actualizado.`, 'ok');
+        }
     }
 
     await loadLists();
