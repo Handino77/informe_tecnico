@@ -23,10 +23,13 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;margin:0;padding:20px 0;dis
 .fecha input{border:none;background:transparent;font-size:9px;font-weight:700;color:#333;padding:0;width:90px;outline:none}
 h2{font-size:9px;background:#f0f0f0;padding:3px 6px;border-left:3px solid #004a99;text-transform:uppercase;color:#222;margin-bottom:5px;margin-top:8px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 8px;margin-bottom:8px}
+.grid-eq{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;margin-bottom:8px}
+.grid-cont{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;margin-bottom:8px;margin-top:8px}
 .full{grid-column:1/-1}
 .two{grid-column:span 2}
 label{display:block;font-size:7px;font-weight:700;color:#004a99;margin-bottom:1px;text-transform:uppercase}
 input,textarea,select{width:100%;border:none;border-bottom:1px solid #ccc;padding:2px 0;font-size:10px;outline:none;background:transparent}
+select{padding:2px 4px;border:1px solid #ccc;border-radius:3px;background:#fff}
 .exp{margin-bottom:8px;border:1px solid #ddd;border-radius:4px;overflow:hidden}
 .exp-hdr{background:#f5f5f5;padding:5px 8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:9px;font-weight:700;color:#004a99}
 .exp-hdr:hover{background:#e8e8e8}
@@ -44,7 +47,7 @@ input,textarea,select{width:100%;border:none;border-bottom:1px solid #ccc;paddin
 .firma-box{display:flex;flex-direction:column}
 .firma-box input{margin-bottom:40px}
 .firma-line{border-top:1px solid #333;padding-top:5px;text-align:center;font-size:8px;color:#666;font-weight:700}
-.btns{position:fixed;bottom:15px;right:15px;display:flex;gap:8px;z-index:100}
+.btns{position:fixed;bottom:15px;right:15px;display:flex;gap:8px;z-index:100;flex-wrap:wrap}
 button{padding:8px 12px;cursor:pointer;border:none;border-radius:4px;font-weight:700;box-shadow:0 2px 5px rgba(0,0,0,.2);font-size:11px}
 .btn-blue{background:#004a99;color:#fff}
 .btn-gray{background:#fff;color:#333}
@@ -54,7 +57,45 @@ button{padding:8px 12px;cursor:pointer;border:none;border-radius:4px;font-weight
 .notif.ok{background:#38a169;color:#fff}
 .notif.err{background:#c00;color:#fff}
 @keyframes slideIn{from{transform:translateX(400px);opacity:0}to{transform:translateX(0);opacity:1}}
-@media print{@page{margin:.5cm!important;size:letter}body{margin:0;padding:0;background:#fff}.doc{width:100%;box-shadow:none;padding:.5cm .8cm!important;margin:0}.btns,.btn-del,.notif,.status{display:none!important}input,textarea,select,.fecha input{background:transparent!important;border:none!important;padding:0!important}input::placeholder{color:transparent}h2,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}.exp-cnt{display:block!important}.toggle-icon{display:none}}
+
+@media (max-width: 768px){
+.doc{width:100%;padding:.5cm .3cm;box-shadow:none}
+.grid{grid-template-columns:1fr;gap:6px}
+.grid-eq{grid-template-columns:1fr;gap:6px}
+.grid-cont{grid-template-columns:1fr;gap:6px}
+.two{grid-column:span 1}
+.hdr{flex-direction:column;align-items:flex-start}
+.logo-area{width:100%;justify-content:space-between}
+.logo img{width:60px}
+.emp-info{font-size:8px}
+.emp-name{font-size:11px}
+.titulo{text-align:left;width:100%;margin-top:8px}
+.titulo h1{font-size:14px}
+.num{font-size:11px}
+.chk-grid{grid-template-columns:1fr;gap:6px}
+.firmas{grid-template-columns:1fr;gap:15px}
+.btns{bottom:10px;right:10px;left:10px;justify-content:center;gap:4px}
+button{padding:6px 8px;font-size:10px;flex:1;min-width:80px}
+.btn-gray{font-size:9px;padding:5px 6px}
+.status{font-size:10px;padding:4px 8px;flex-direction:column;gap:4px}
+.notif{right:10px;left:10px;top:50px;font-size:12px}
+.rep-row{grid-template-columns:1fr;gap:6px}
+.rep-row>div:last-of-type{grid-column:1}
+.btn-del{width:100%;height:auto;padding:4px;margin-top:4px}
+body{padding:10px 0}
+}
+
+@media print{
+@page{margin:.5cm!important;size:letter}
+body{margin:0;padding:0;background:#fff}
+.doc{width:100%;box-shadow:none;padding:.5cm .8cm!important;margin:0}
+.btns,.btn-del,.notif,.status{display:none!important}
+input,textarea,select,.fecha input{background:transparent!important;border:none!important;padding:0!important}
+input::placeholder{color:transparent}
+h2,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.exp-cnt{display:block!important}
+.toggle-icon{display:none}
+}
 </style>
 </head>
 <body>
@@ -94,7 +135,7 @@ button{padding:8px 12px;cursor:pointer;border:none;border-radius:4px;font-weight
     </div>
   </div>
 
-  <h2>Información del Cliente y Equipo</h2>
+  <h2>Información del Cliente</h2>
   <div class="grid">
     <div class="two"><label>Cliente / Empresa</label><input type="text" id="cliNom" list="cli-list" placeholder="Nombre del cliente..." onchange="autocomplete()"></div>
     <div><label>RUT</label><input type="text" id="cliRut" placeholder="XX.XXX.XXX-X" oninput="fmtRut(this)"></div>
@@ -103,9 +144,25 @@ button{padding:8px 12px;cursor:pointer;border:none;border-radius:4px;font-weight
     <div><label>Contacto</label><input type="text" id="cliCon" placeholder="Atención a..."></div>
     <div><label>Email</label><input type="text" id="cliMail" placeholder="correo@ejemplo.com"></div>
     <div><label>Teléfono</label><input type="text" id="cliTel" placeholder="+56 9..."></div>
+  </div>
+
+  <h2>Información del Equipo</h2>
+  <div class="grid-eq">
     <div><label>Marca Equipo</label><input type="text" id="eqMarca" list="marca-list" placeholder="Marca..." onchange="saveMarca(this.value)"></div>
     <div><label>Modelo</label><input type="text" id="eqMod" list="modelo-list" placeholder="Modelo" onchange="saveModelo(this.value)"></div>
     <div><label>Serie</label><input type="text" id="eqSer" placeholder="N° de serie"></div>
+    <div><label>Condición</label>
+      <select id="eqCond">
+        <option value="">Seleccionar...</option>
+        <option value="Arriendo">Arriendo</option>
+        <option value="Venta">Venta</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid-cont">
+    <div><label>Contador B/N</label><input type="number" id="contBN" placeholder="0" min="0"></div>
+    <div><label>Contador Color</label><input type="number" id="contColor" placeholder="0" min="0"></div>
   </div>
 
   <div class="exp">
@@ -340,7 +397,12 @@ async function save(){
     equipo:{
       marca:document.getElementById('eqMarca').value.trim(),
       modelo:document.getElementById('eqMod').value.trim(),
-      serie:document.getElementById('eqSer').value.trim()
+      serie:document.getElementById('eqSer').value.trim(),
+      condicion:document.getElementById('eqCond').value
+    },
+    contadores:{
+      bn:document.getElementById('contBN').value||'0',
+      color:document.getElementById('contColor').value||'0'
     },
     repInst,repRet,trab,
     obs:document.getElementById('obs').value.trim()
