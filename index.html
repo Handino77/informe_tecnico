@@ -414,14 +414,15 @@
 <div class="controls" role="region" aria-label="Controles">
   <button class="btn-ghost" onclick="addRepInst()">+ Rep. Inst</button>
   <button class="btn-ghost" onclick="addRepRet()">+ Rep. Ret</button>
-  <button class="btn-save" onclick="save()">GUARDAR</button>
+  <button class="btn-save" id="saveBtn" onclick="save()">GUARDAR</button>
   <button class="btn-blue" onclick="window.print()">Imprimir</button>
 </div>
 
 <script>
 /* ------------------ CONFIG ------------------ */
 const URL = 'https://informes-realtech.realtech-spa.workers.dev/';
-let isSyncing = false; // <<< [CORRECCIÓN 1] Bandera de concurrencia
+let isSyncing = false;
+let isSaving = false; // <<< [CORRECCIÓN 1] Bandera de concurrencia para save()
 
 /* ------------------ IndexedDB Setup ------------------ */
 let db = null;
@@ -557,10 +558,10 @@ async function initApp(){
   // Intentar cargar el último técnico y su folio si ya están guardados
   const lastTech = await dbGet('config', 'lastTech');
   if (lastTech && lastTech.id) {
-    appState.techId = lastTech.id;
-    appState.techName = lastTech.name;
     document.getElementById('nomTec').value = lastTech.name;
-    await loadTechFolio(appState.techId);
+    // Forzamos la ejecución de onTechSelect si ya hay un técnico guardado
+    // Nota: onTechSelect actualizará appState.techId y llamará a loadTechFolio
+    await onTechSelect.call(document.getElementById('nomTec'));
   }
   
   // load data from local DB
@@ -727,107 +728,123 @@ async function saveRepIfNew(r){
 
 /* ------------------ Save order (offline-first) ------------------ */
 async function save(){
-  if (!appState.techId) {
-    notif('Debe seleccionar su Nombre Técnico para generar el folio.', 'err');
-    return;
-  }
+  const saveBtn = document.getElementById('saveBtn');
   
-  const cliNom = document.getElementById('cliNom').value.trim();
-  if(!cliNom){ notif('Ingrese el nombre del cliente', 'err'); return; }
+  if (isSaving || saveBtn.disabled) return; // Control de concurrencia y visual
 
-  // 1. Construir el folio compuesto
-  const folioActual = String(appState.folio).padStart(4,'0');
-  const techPrefijo = String(appState.techId).padStart(2,'0');
-  const correlativoCompleto = techPrefijo + folioActual; // Ej: 010006
+  isSaving = true;
+  saveBtn.disabled = true; // Deshabilitar inmediatamente
 
-  // Prepare client object & persist if new
-  const cliData = {
-    nombre: cliNom,
-    rut: document.getElementById('cliRut').value.trim(),
-    direccion: document.getElementById('cliDir').value.trim(),
-    ciudad: document.getElementById('cliCiu').value.trim(),
-    contacto: document.getElementById('cliCon').value.trim(),
-    email: document.getElementById('cliMail').value.trim(),
-    telefono: document.getElementById('cliTel').value.trim()
-  };
-  await saveClienteIfNew(cliData);
-
-  // Collect repuestos
-  const repInst = Array.from(document.querySelectorAll('#repInst .rep-row')).map(r => {
-    return {
-      nombre: (r.querySelector('.rep-nom')?.value || '').trim(),
-      serie: (r.querySelector('.rep-ser')?.value || '').trim()
-    };
-  }).filter(x => x.nombre);
-  const repRet = Array.from(document.querySelectorAll('#repRet .rep-row')).map(r => {
-    return {
-      nombre: (r.querySelector('.rep-ret-nom')?.value || '').trim(),
-      serie: (r.querySelector('.rep-ret-ser')?.value || '').trim()
-    };
-  }).filter(x => x.nombre);
-
-  // Trabajos
-  const trab = Array.from(document.querySelectorAll('#trabChk input:checked')).map(cb => cb.value);
-
-  // Equipo
-  const orden = {
-    // Usamos el folio compuesto
-    numero: correlativoCompleto, 
-    fecha: document.getElementById('fecha').value || new Date().toISOString().split('T')[0],
-    cliente: cliData,
-    equipo: {
-      marca: document.getElementById('eqMarca').value.trim(),
-      modelo: document.getElementById('eqMod').value.trim(),
-      serie: document.getElementById('eqSer').value.trim(),
-      condicion: document.getElementById('eqCond').value
-    },
-    contadores: {
-      bn: document.getElementById('contBN').value || '0',
-      color: document.getElementById('contColor').value || '0'
-    },
-    repInst, repRet, trab,
-    obs: document.getElementById('obs').value.trim(),
-    extra: { 
-      tecnico: appState.techName, 
-      clienteFirma: document.getElementById('nomCliFirma').value.trim(),
-      idTecnico: appState.techId, // Guardamos el ID por si se necesita en el backend
-      folioTecnico: appState.folio // Guardamos el folio simple (ej: 6)
+  try {
+    if (!appState.techId) {
+      notif('Debe seleccionar su Nombre Técnico para generar el folio.', 'err');
+      return;
     }
-  };
+    
+    const cliNom = document.getElementById('cliNom').value.trim();
+    if(!cliNom){ notif('Ingrese el nombre del cliente', 'err'); return; }
 
-  // Save reuso: add marca/modelo/repuestos to master lists
-  if(orden.equipo.marca) await saveMarcaIfNew(orden.equipo.marca);
-  if(orden.equipo.modelo) await saveModeloIfNew(orden.equipo.modelo);
-  repInst.forEach(r => { if(r.nombre) saveRepIfNew(r.nombre); });
-  repRet.forEach(r => { if(r.nombre) saveRepIfNew(r.nombre); });
+    // 1. Construir el folio compuesto
+    const folioActual = String(appState.folio).padStart(4,'0');
+    const techPrefijo = String(appState.techId).padStart(2,'0');
+    const correlativoCompleto = techPrefijo + folioActual; // Ej: 010006
 
-  // Save order to ordenesPend (offline queue)
-  await dbAdd('ordenesPend', orden);
+    // Prepare client object & persist if new
+    const cliData = {
+      nombre: cliNom,
+      rut: document.getElementById('cliRut').value.trim(),
+      direccion: document.getElementById('cliDir').value.trim(),
+      ciudad: document.getElementById('cliCiu').value.trim(),
+      contacto: document.getElementById('cliCon').value.trim(),
+      email: document.getElementById('cliMail').value.trim(),
+      telefono: document.getElementById('cliTel').value.trim()
+    };
+    await saveClienteIfNew(cliData);
 
-  // Incremento y persistencia del número ESPECÍFICO DEL TÉCNICO
-  appState.folio++;
-  const newFolioKey = `folio_${appState.techId}`;
-  await dbSet('config', { key: newFolioKey, value: appState.folio });
+    // Collect repuestos
+    const repInst = Array.from(document.querySelectorAll('#repInst .rep-row')).map(r => {
+      return {
+        nombre: (r.querySelector('.rep-nom')?.value || '').trim(),
+        serie: (r.querySelector('.rep-ser')?.value || '').trim()
+      };
+    }).filter(x => x.nombre);
+    const repRet = Array.from(document.querySelectorAll('#repRet .rep-row')).map(r => {
+      return {
+        nombre: (r.querySelector('.rep-ret-nom')?.value || '').trim(),
+        serie: (r.querySelector('.rep-ret-ser')?.value || '').trim()
+      };
+    }).filter(x => x.nombre);
+
+    // Trabajos
+    const trab = Array.from(document.querySelectorAll('#trabChk input:checked')).map(cb => cb.value);
+
+    // Equipo
+    const orden = {
+      // Usamos el folio compuesto
+      numero: correlativoCompleto, 
+      fecha: document.getElementById('fecha').value || new Date().toISOString().split('T')[0],
+      cliente: cliData,
+      equipo: {
+        marca: document.getElementById('eqMarca').value.trim(),
+        modelo: document.getElementById('eqMod').value.trim(),
+        serie: document.getElementById('eqSer').value.trim(),
+        condicion: document.getElementById('eqCond').value
+      },
+      contadores: {
+        bn: document.getElementById('contBN').value || '0',
+        color: document.getElementById('contColor').value || '0'
+      },
+      repInst, repRet, trab,
+      obs: document.getElementById('obs').value.trim(),
+      extra: { 
+        tecnico: appState.techName, 
+        clienteFirma: document.getElementById('nomCliFirma').value.trim(),
+        idTecnico: appState.techId, // Guardamos el ID por si se necesita en el backend
+        folioTecnico: appState.folio // Guardamos el folio simple (ej: 6)
+      }
+    };
+
+    // Save reuso: add marca/modelo/repuestos to master lists
+    if(orden.equipo.marca) await saveMarcaIfNew(orden.equipo.marca);
+    if(orden.equipo.modelo) await saveModeloIfNew(orden.equipo.modelo);
+    repInst.forEach(r => { if(r.nombre) saveRepIfNew(r.nombre); });
+    repRet.forEach(r => { if(r.nombre) saveRepIfNew(r.nombre); });
+
+    // Save order to ordenesPend (offline queue)
+    await dbAdd('ordenesPend', orden);
+
+    // Incremento y persistencia del número ESPECÍFICO DEL TÉCNICO
+    appState.folio++;
+    const newFolioKey = `folio_${appState.techId}`;
+    await dbSet('config', { key: newFolioKey, value: appState.folio });
+    
+    // Update UI
+    renderNum();
+
+    notif(`Orden N°${correlativoCompleto} guardada`, 'ok');
+    renderPendingBadge();
+    
+    // Limpiar campos (excepto fecha y técnico)
+    document.querySelectorAll('input:not(#fecha):not(#nomTec):not(#num), textarea, select').forEach(i => {
+      if(i.type === 'select-one') i.value = ''; else i.value = '';
+    });
+    document.querySelectorAll('#repInst .rep-row, #repRet .rep-row').forEach((r, i) => { 
+      if (i > 0) r.remove(); // Deja solo la primera fila vacía
+      r.querySelectorAll('input').forEach(i => i.value = '');
+    });
+    document.querySelectorAll('#trabChk input').forEach(c => c.checked = false);
+    updateTrab();
+
+    // Try sync immediately if online
+    if(navigator.onLine) await sync();
   
-  // Update UI
-  renderNum();
-
-  notif(`Orden N°${correlativoCompleto} guardada`, 'ok');
-  renderPendingBadge();
-  
-  // Limpiar campos (excepto fecha y técnico)
-  document.querySelectorAll('input:not(#fecha):not(#nomTec):not(#num), textarea, select').forEach(i => {
-    if(i.type === 'select-one') i.value = ''; else i.value = '';
-  });
-  document.querySelectorAll('#repInst .rep-row, #repRet .rep-row').forEach((r, i) => { 
-    if (i > 0) r.remove(); // Deja solo la primera fila vacía
-    r.querySelectorAll('input').forEach(i => i.value = '');
-  });
-  document.querySelectorAll('#trabChk input').forEach(c => c.checked = false);
-  updateTrab();
-
-  // Try sync immediately if online
-  if(navigator.onLine) await sync();
+  } catch (e) {
+    console.error("Error al guardar la orden:", e);
+    notif('Error crítico al guardar. Consulte la consola.', 'err');
+  } finally {
+    isSaving = false;
+    saveBtn.disabled = false; // Re-habilitar el botón
+  }
 }
 
 /* ------------------ Sync logic ------------------ */
@@ -846,12 +863,12 @@ async function renderPendingBadge(){
 }
 
 async function sync(){
-  if(isSyncing) return; // <<< [CORRECCIÓN 2] Salir si ya hay una sincronización en curso
+  if(isSyncing) return; // Salir si ya hay una sincronización en curso
   if(!navigator.onLine) { notif('Sin conexión — pendiente', 'err'); return; }
   const pend = await dbGetAll('ordenesPend');
   if(pend.length === 0){ notif('No hay órdenes pendientes', 'ok'); return; }
 
-  isSyncing = true; // <<< [CORRECCIÓN 2] Establecer bandera
+  isSyncing = true; // Establecer bandera
   showStatus('Sincronizando...');
   let successes = 0, failures = 0;
   
@@ -877,7 +894,7 @@ async function sync(){
       }
     }
   } finally {
-    isSyncing = false; // <<< [CORRECCIÓN 2] Restablecer bandera
+    isSyncing = false; // Restablecer bandera
   }
 
   await renderPendingBadge();
@@ -946,7 +963,7 @@ function escapeHtml(str){ if(!str) return ''; return String(str).replace(/[&<>"'
 
 /* ------------------ Status & connectivity ------------------ */
 function updateStatus(){
-  // <<< [CORRECCIÓN 3] Se elimina la llamada a sync() para evitar concurrencia
+  // Solo actualiza el estado. La sincronización se maneja por eventos o por 'save()'
   if(navigator.onLine){ showStatus('Conectado'); } else { showStatus('Offline', true); }
 }
 
