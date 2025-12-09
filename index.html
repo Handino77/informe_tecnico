@@ -421,6 +421,7 @@
 <script>
 /* ------------------ CONFIG ------------------ */
 const URL = 'https://informes-realtech.realtech-spa.workers.dev/';
+let isSyncing = false; // <<< [CORRECCIÓN 1] Bandera de concurrencia
 
 /* ------------------ IndexedDB Setup ------------------ */
 let db = null;
@@ -571,6 +572,7 @@ async function initApp(){
   syncServer();
 
   // connectivity events
+  // Cuando se vuelve a conectar, llama a updateStatus (que solo actualiza el texto) y luego a sync()
   window.addEventListener('online', () => { updateStatus(); sync(); });
   window.addEventListener('offline', updateStatus);
   updateStatus();
@@ -844,32 +846,38 @@ async function renderPendingBadge(){
 }
 
 async function sync(){
+  if(isSyncing) return; // <<< [CORRECCIÓN 2] Salir si ya hay una sincronización en curso
   if(!navigator.onLine) { notif('Sin conexión — pendiente', 'err'); return; }
   const pend = await dbGetAll('ordenesPend');
   if(pend.length === 0){ notif('No hay órdenes pendientes', 'ok'); return; }
 
+  isSyncing = true; // <<< [CORRECCIÓN 2] Establecer bandera
   showStatus('Sincronizando...');
   let successes = 0, failures = 0;
-
-  for(const o of pend){
-    try {
-      const res = await fetch(URL, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ action: 'saveOrden', data: o })
-      });
-      const json = await res.json();
-      if(json && json.success){
-        await dbDelete('ordenesPend', o.id);
-        successes++;
-      } else {
+  
+  try { // Usar try/finally para garantizar que la bandera se restablezca
+    for(const o of pend){
+      try {
+        const res = await fetch(URL, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ action: 'saveOrden', data: o })
+        });
+        const json = await res.json();
+        if(json && json.success){
+          await dbDelete('ordenesPend', o.id);
+          successes++;
+        } else {
+          failures++;
+          console.warn('Fallo server', o, json);
+        }
+      } catch (e){
         failures++;
-        console.warn('Fallo server', o, json);
+        console.warn('Error enviando', e);
       }
-    } catch (e){
-      failures++;
-      console.warn('Error enviando', e);
     }
+  } finally {
+    isSyncing = false; // <<< [CORRECCIÓN 2] Restablecer bandera
   }
 
   await renderPendingBadge();
@@ -938,7 +946,8 @@ function escapeHtml(str){ if(!str) return ''; return String(str).replace(/[&<>"'
 
 /* ------------------ Status & connectivity ------------------ */
 function updateStatus(){
-  if(navigator.onLine){ showStatus('Conectado'); sync(); } else { showStatus('Offline', true); }
+  // <<< [CORRECCIÓN 3] Se elimina la llamada a sync() para evitar concurrencia
+  if(navigator.onLine){ showStatus('Conectado'); } else { showStatus('Offline', true); }
 }
 
 /* ------------------ Small UX: autosave marca/modelo/repuesto on leave ------------------ */
