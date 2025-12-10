@@ -6,33 +6,64 @@
 <title>Orden de Servicio Técnico - Realtech SpA</title>
 <link rel="icon" href="logo_realtech.png" />
 <style>
-  /* --------- Diseño base responsive --------- */
-  :root{
-    --blue: #004a99;
-    --blue-dark: #003370;
+  /* --------- Diseño base responsive con sistema de espaciado 8px --------- */
+  :root {
+    /* Paleta corporativa */
+    --realtech-blue: #004a99;
+    --realtech-blue-dark: #002b5c;
+    --realtech-green: #00a86b;
+    --realtech-gray: #4a5568;
+    --realtech-bg: #f7fafc;
+
+    /* Colores heredados y ajustados */
     --muted: #f8fafc;
-    --accent: #38a169;
+    --accent: var(--realtech-green);
     --danger: #e53e3e;
     --card: #ffffff;
-    --text: #1f2937;
+    --text: var(--realtech-gray);
     --sub: #64748b;
     --border: #e2e8f0;
-    --radius: 10px;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+    /* Espaciado (sistema 8px) */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+
+    /* Bordes */
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-pill: 50px;
+    --border-width: 1px;
+    --border-focus: 2px;
+
+    /* Sombras */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+
+    /* Transiciones */
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  
+
   body {
     margin: 0;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: #f1f5f9;
+    background: var(--realtech-bg);
     color: var(--text);
-    padding: 15px;
+    padding: var(--space-sm);
     display: flex;
     justify-content: center;
     min-height: 100vh;
-    padding-bottom: 100px; /* Espacio para controles móviles */
+    padding-bottom: var(--space-2xl); /* Espacio para controles móviles */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Contenedor Principal */
@@ -40,449 +71,568 @@
     width: 100%;
     max-width: 980px;
     background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 25px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-md);
     position: relative;
   }
 
-  /* Header */
-  header {
+  /* Header optimizado */
+  .header-optimized {
+    background: linear-gradient(135deg, #ffffff 0%, var(--realtech-bg) 100%);
+    border-bottom: 3px solid var(--realtech-blue);
+    padding: var(--space-md);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    margin-bottom: var(--space-md);
+  }
+  .header-top {
     display: flex;
-    gap: 20px;
+    justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid var(--muted);
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
+    margin-bottom: var(--space-sm);
   }
-  .logo img { width: 80px; height: auto; border-radius: 6px; object-fit: contain; }
-  .brand { flex: 1; min-width: 200px; }
-  .brand h1 { margin: 0; font-size: 20px; color: var(--blue); line-height: 1.2; }
-  .brand p { margin: 4px 0 0; font-size: 13px; color: var(--sub); line-height: 1.4; }
-  
-  .meta { 
-    text-align: right; 
-    min-width: 140px; 
-    background: var(--muted);
-    padding: 10px;
-    border-radius: 8px;
+  .logo-container {
+    flex-shrink: 0;
   }
-  .meta .num { font-weight: 800; color: var(--blue); font-size: 18px; margin-bottom: 4px; }
-  .meta .fecha { font-size: 13px; color: var(--sub); display: flex; flex-direction: column; align-items: flex-end; }
-  .meta .fecha input { text-align: right; padding: 4px; border: none; background: transparent; font-weight: 600; color: var(--sub); }
-
-  /* Grids Responsivos (La clave del arreglo) */
-  .grid, .grid-eq {
-    display: grid;
-    /* Esto hace que las columnas se adapten automáticamente */
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
-    align-items: end;
+  .logo-img {
+    width: 80px;
+    height: auto;
+    border-radius: var(--radius-sm);
+    object-fit: contain;
+    box-shadow: var(--shadow-sm);
   }
-  /* Excepciones para campos que deben ocupar todo el ancho si es necesario */
-  .full-width { grid-column: 1 / -1; }
-
-  label { display: block; font-size: 12px; color: var(--blue); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-  
-  /* Inputs táctiles optimizados (Mobile-First) */
-  input[type="text"], input[type="date"], input[type="number"], textarea, select {
-    width: 100%;
-    padding: 12px; /* Generoso */
-    border: 1px solid var(--border);
-    border-radius: 8px;
+  .order-badge {
+    background: var(--realtech-blue);
+    color: white;
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-pill);
+    font-weight: 800;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 18px;
+  }
+  .badge-label {
+    font-size: 14px;
+  }
+  .badge-number {
+    font-size: 18px;
+  }
+  .company-info {
+    text-align: center;
+    margin-bottom: var(--space-sm);
+  }
+  .company-title {
+    margin: 0;
+    font-size: 20px;
+    color: var(--realtech-blue);
+    line-height: 1.2;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+  }
+  .company-name {
+    display: block;
+    font-weight: 800;
+  }
+  .document-type {
+    display: block;
+    font-size: 16px;
+  }
+  .company-details {
+    font-size: 13px;
+    color: var(--sub);
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+  .icon {
+    width: 16px;
+    height: 16px;
+    fill: var(--sub);
+  }
+  .header-meta {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .meta-label {
+    font-size: 12px;
+    color: var(--realtech-blue);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .date-input {
+    padding: var(--space-sm) var(--space-md);
+    border: var(--border-width) solid var(--border);
+    border-radius: var(--radius-md);
     background: #fff;
-    font-size: 16px; /* Evita zoom en iOS */
+    font-size: 15px;
     color: var(--text);
     outline: none;
-    transition: all 0.2s;
-    height: 44px; /* Altura mínima táctil (44px min-height) */
+    transition: var(--transition-normal);
+    height: 44px; /* Altura táctil mínima */
+    text-align: right;
+  }
+
+  /* Grids Responsivos */
+  .grid, .grid-eq {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+    align-items: end;
+  }
+  .full-width { grid-column: 1 / -1; }
+
+  label { 
+    display: block; 
+    font-size: 12px; 
+    color: var(--realtech-blue); 
+    font-weight: 700; 
+    margin-bottom: var(--space-xs); 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+  }
+
+  /* Inputs optimizados para táctil */
+  input[type="text"], input[type="date"], input[type="number"], textarea, select {
+    width: 100%;
+    padding: 12px 14px; /* Generoso para táctil */
+    border: var(--border-width) solid var(--border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    font-size: 16px !important; /* Evita zoom en iOS */
+    color: var(--text);
+    outline: none;
+    transition: var(--transition-normal);
+    height: 44px; /* Altura mínima táctil */
   }
   input:focus, textarea:focus, select:focus {
-    border-color: var(--blue);
-    box-shadow: 0 0 0 3px rgba(0, 74, 153, 0.1);
+    border-color: var(--realtech-blue);
+    box-shadow: 0 0 0 var(--border-focus) rgba(0, 74, 153, 0.1);
   }
-  textarea { min-height: 80px; resize: vertical; height: auto; }
+  textarea { min-height: 100px; resize: vertical; height: auto; }
 
   /* Títulos de Sección */
-  .section-title { margin: 25px 0 10px; }
+  .section-title { margin: var(--space-lg) 0 var(--space-sm); }
   .section-title h2 {
-    margin: 0; font-size: 14px;
+    margin: 0; 
+    font-size: 14px;
     background: #f0f7ff;
-    padding: 10px 15px;
-    border-radius: 6px;
-    border-left: 5px solid var(--blue);
-    color: var(--blue);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    border-left: 5px solid var(--realtech-blue);
+    color: var(--realtech-blue);
     text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
   }
 
-  /* Botón para añadir repuestos dentro de la sección (44px min-height) */
+  /* Botón para añadir repuestos */
   .btn-section-add {
     background: #fff;
-    border: 1px solid var(--border);
-    color: var(--blue);
-    padding: 12px 15px; /* Más padding para 44px min-height */
-    border-radius: 8px;
-    font-weight: 700;
+    border: var(--border-width) solid var(--border);
+    color: var(--realtech-blue);
+    padding: 12px 14px; /* Táctil */
+    border-radius: var(--radius-md);
+    font-weight: 600;
     cursor: pointer;
     font-size: 14px;
-    width: 100%; /* Ancho completo */
-    margin-top: 15px;
-    transition: background 0.2s;
-    min-height: 44px; /* Asegurar área táctil */
+    width: 100%;
+    margin-top: var(--space-md);
+    transition: var(--transition-fast);
+    height: 44px; /* Táctil */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
   }
   .btn-section-add:hover { background: var(--muted); }
+  .btn-section-add:active { transform: scale(0.98); }
 
   /* Bloques expandibles y Repuestos */
-  .exp { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; }
-  .exp-hdr { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
-  .exp-hdr strong { margin-right: auto; }
-  
-  /* Filas de repuestos responsive (CRÍTICO: Horizontal en Desktop) */
-  .rep-row {
-    display: grid;
-    grid-template-columns: 1fr 140px 40px; /* Repuesto | Serie | Botón × */
-    gap: 10px;
-    align-items: center; /* Alinear verticalmente los inputs */
-    margin-bottom: 12px;
-    background: #fff;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
+  .exp { 
+    background: var(--muted); 
+    padding: var(--space-md); 
+    border-radius: var(--radius-md); 
+    border: var(--border-width) solid var(--border); 
+    margin-bottom: var(--space-md); 
+    transition: var(--transition-normal);
   }
-  /* Ajustar inputs dentro de repuestos para que no tengan la altura táctil si es innecesario */
-  .rep-row input { 
-      height: 40px; 
-      padding: 8px 10px; 
-      font-size: 15px; /* Font size ligeramente menor en las filas de repuestos */
+  .exp-hdr { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    cursor: pointer; 
+    user-select: none; 
+    font-weight: 600;
+    color: var(--realtech-blue);
+    transition: var(--transition-fast);
+  }
+  .exp-hdr::after {
+    content: '▼';
+    font-size: 14px;
+    transition: var(--transition-normal);
+  }
+  .exp-hdr.collapsed::after {
+    content: '▲';
+  }
+  .exp-cnt {
+    display: block;
+    overflow: hidden;
+    transition: var(--transition-normal);
+    max-height: 1000px; /* Para animación */
+  }
+  .exp-cnt.collapsed {
+    max-height: 0;
+    padding: 0;
   }
 
-  .rep-empty {
-    font-size: 14px;
-    color: var(--sub);
-    font-style: italic;
-    padding: 5px;
-    text-align: center;
-    display: none; /* Controlado por JS */
+  /* Filas de repuestos responsive */
+  .rep-row {
+    display: grid;
+    grid-template-columns: 1fr 140px 40px;
+    gap: var(--space-sm);
+    align-items: end;
+    margin-bottom: var(--space-sm);
+    background: #fff;
+    padding: var(--space-sm);
+    border-radius: var(--radius-md);
+    border: var(--border-width) solid var(--border);
+    box-shadow: var(--shadow-sm);
   }
-  
   .btn-del {
-    background: #fee2e2; color: var(--danger);
-    border: none; border-radius: 6px;
-    height: 40px; width: 100%;
-    font-weight: bold; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; /* Símbolo × más grande */
+    background: #fee2e2; 
+    color: var(--danger);
+    border: none; 
+    border-radius: var(--radius-sm);
+    height: 44px; /* Táctil */
+    width: 100%;
+    font-weight: bold; 
+    cursor: pointer;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    transition: var(--transition-fast);
   }
+  .btn-del:hover { background: var(--danger); color: white; }
+  .btn-del:active { transform: scale(0.98); }
 
   /* Checkboxes */
   .chk-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 10px;
+    gap: var(--space-sm);
   }
   .chk-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px; background: #fff;
-    border-radius: 8px; border: 1px solid var(--border);
+    display: flex; 
+    align-items: center; 
+    gap: var(--space-sm);
+    padding: var(--space-sm); 
+    background: #fff;
+    border-radius: var(--radius-md); 
+    border: var(--border-width) solid var(--border);
     cursor: pointer;
+    transition: var(--transition-fast);
+    box-shadow: var(--shadow-sm);
   }
-  .chk-item input { width: 18px; height: 18px; margin: 0; }
+  .chk-item:hover { box-shadow: var(--shadow-md); }
+  .chk-item input { 
+    width: 24px; /* Más grande para táctil */
+    height: 24px; 
+    margin: 0; 
+    accent-color: var(--realtech-blue);
+  }
   .trab-desc { 
-    margin-top: 10px; 
-    padding: 12px; 
+    margin-top: var(--space-sm); 
+    padding: var(--space-md); 
     background: #fff; 
-    border: 1px solid var(--border); 
-    border-radius: 8px; 
+    border: var(--border-width) solid var(--border); 
+    border-radius: var(--radius-md); 
     color: var(--sub); 
     font-size: 14px; 
     line-height: 1.5; 
+    box-shadow: var(--shadow-sm);
   }
 
   /* Footer y Firmas */
-  .footer { margin-top: 30px; border-top: 2px solid var(--muted); padding-top: 20px; }
+  .footer { 
+    margin-top: var(--space-xl); 
+    border-top: 2px solid var(--muted); 
+    padding-top: var(--space-lg); 
+  }
   .firmas {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    gap: var(--space-lg);
   }
-  /* Línea de firma solo para pantalla, se elimina en print */
-  .firma-line { margin-top: 5px; border-top: 1px dashed var(--sub); padding-top: 5px; font-size: 11px; text-align: center; color: var(--sub); text-transform: uppercase; }
+  .firma-line { 
+    margin-top: var(--space-xs); 
+    border-top: 1px dashed var(--sub); 
+    padding-top: var(--space-xs); 
+    font-size: 11px; 
+    text-align: center; 
+    color: var(--sub); 
+    text-transform: uppercase; 
+  }
 
   /* Controles Flotantes (Botones) */
   .controls {
     position: fixed;
-    bottom: 20px; right: 20px;
-    display: flex; flex-direction: column; gap: 10px;
-    z-index: 1000;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    z-index: 9999; /* Alto para evitar superposiciones */
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    padding: var(--space-sm);
+    border-top: var(--border-width) solid var(--border);
+    box-shadow: var(--shadow-lg);
   }
   .controls button {
     padding: 12px 20px;
-    border-radius: 50px;
+    border-radius: var(--radius-md);
     border: none;
     font-weight: 700;
     cursor: pointer;
     font-size: 14px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    transition: transform 0.1s;
+    transition: var(--transition-fast);
     min-width: 160px;
     text-align: center;
-    min-height: 44px; /* Altura mínima táctil */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    height: 44px; /* Táctil */
   }
-  .controls button:active { transform: scale(0.96); }
-  .btn-save { background: var(--accent); color: #fff; }
-  .btn-blue { background: var(--blue); color: #fff; }
+  .controls button:active { transform: scale(0.98); }
+  .btn-save { 
+    background: var(--realtech-green); 
+    color: #fff; 
+    flex: 2; 
+  }
+  .btn-blue { 
+    background: var(--realtech-blue); 
+    color: #fff; 
+    flex: 1; 
+  }
 
   /* Status Bar */
   .statusbar {
-    position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+    position: fixed; 
+    top: var(--space-md); 
+    left: 50%; 
+    transform: translateX(-50%);
     background: rgba(255,255,255,0.95);
     backdrop-filter: blur(5px);
-    padding: 8px 16px;
-    border-radius: 30px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-md);
     z-index: 1100;
-    display: flex; gap: 10px; align-items: center; font-size: 13px;
-    border: 1px solid var(--border);
+    display: flex; 
+    gap: var(--space-sm); 
+    align-items: center; 
+    font-size: 13px;
+    border: var(--border-width) solid var(--border);
     width: max-content;
     max-width: 90%;
   }
 
   /* ---------------- MEDIA QUERIES (Móvil) ---------------- */
   @media (max-width: 768px) {
-    body { padding: 10px; padding-bottom: 140px; } /* Más espacio abajo para el menú flotante */
-    .container { padding: 15px; border-radius: 0; box-shadow: none; max-width: 100%; }
-    
+    body { padding: var(--space-xs); padding-bottom: calc(var(--space-xl) + env(safe-area-inset-bottom)); } /* Safe areas */
+    .container { padding: var(--space-sm); border-radius: 0; box-shadow: none; max-width: 100%; }
+
     /* Header Stackeado */
-    header { flex-direction: column; text-align: center; gap: 10px; }
-    .brand { width: 100%; }
-    .meta { width: 100%; display: flex; justify-content: space-between; align-items: center; text-align: left; }
-    .meta .fecha { align-items: flex-start; }
-
-    /* Inputs en una sola columna visualmente si es muy angosto */
-    .grid, .grid-eq { grid-template-columns: 1fr; gap: 12px; }
-    
-    /* Repuestos Stackeado (CRÍTICO: Se stackea verticalmente en móvil) */
-    .rep-row {
-      grid-template-columns: 1fr;
-      gap: 8px;
-    }
-    .rep-row div:last-child { margin-top: 5px; } /* Botón eliminar */
-
-    /* Firmas Stackeadas */
-    .firmas { grid-template-columns: 1fr; gap: 20px; }
-
-    /* Controles: Barra inferior fija tipo App */
-    .controls {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: #fff;
-      padding: 12px;
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      border-top: 1px solid var(--border);
-      box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+    .header-optimized { 
+      padding: var(--space-sm); 
       border-radius: 0;
     }
-    .controls button {
-      flex: 1;
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 13px;
-      min-width: auto;
-      box-shadow: none;
+    .header-top {
+      margin-bottom: var(--space-md);
     }
-    .controls .btn-save { 
-        flex: 2; 
-        margin-left: 5px; 
-        order: 2; 
-        border: none; 
+    .logo-img {
+      width: 60px;
+      height: auto;
     }
-    .controls .btn-blue { 
-        flex: 1; 
-        font-size: 13px;
-        padding: 12px;
-        order: 1;
-        display: block; 
+    .company-title {
+      font-size: 18px;
     }
+    .company-details {
+      font-size: 12px;
+      text-align: center;
+    }
+    .header-meta {
+      justify-content: center;
+    }
+    .date-input {
+      text-align: center;
+    }
+
+    /* Grids en una sola columna */
+    .grid, .grid-eq { grid-template-columns: 1fr; gap: var(--space-sm); }
+
+    /* Repuestos Stackeado */
+    .rep-row {
+      grid-template-columns: 1fr;
+      gap: var(--space-sm);
+    }
+    .rep-row div:last-child { margin-top: var(--space-xs); }
+
+    /* Checkboxes en 1 columna */
+    .chk-grid {
+      grid-template-columns: 1fr;
+    }
+
+    /* Firmas Stackeadas */
+    .firmas { grid-template-columns: 1fr; gap: var(--space-md); }
   }
 
-  /* ---------------- PRINT / PDF (CRÍTICO: Carta 8.5" x 11") ---------------- */
+  /* ---------------- PRINT STYLES ---------------- */
+  @page {
+    size: letter portrait;
+    margin: 0.5in;
+  }
   @media print {
-    /* Configuración de página: Carta con márgenes reducidos */
-    @page {
-      size: letter; /* 8.5in x 11in */
-      margin: 12mm 15mm; /* Top/Bottom: 12mm, Left/Right: 15mm */
-    }
-
     body, .container { 
-        background: #fff; 
-        margin: 0; 
-        padding: 0; 
-        box-shadow: none; 
-        width: 100%; 
-        max-width: 100%; 
-        font-family: Arial, sans-serif;
-        color: #000;
-        font-size: 9px; /* Base font-size PDF */
-        line-height: 1.15;
+      background: #fff; 
+      margin: 0; 
+      padding: 0; 
+      box-shadow: none; 
+      width: 100%; 
+      max-width: 100%; 
+      font-size: 10pt; 
     }
-    
-    /* Ocultar elementos de UI */
-    .controls, .statusbar, .btn-section-add, .btn-del, .exp-hdr { display: none !important; }
-    
-    /* Header (CRÍTICO: 3 columnas optimizado) */
-    header { 
-        display: grid; 
-        grid-template-columns: 60px 1fr 120px; /* Logo | Info | N°/Fecha */
-        gap: 15px;
-        align-items: center;
-        border-bottom: 1.5pt solid #000; /* Borde más grueso */
-        padding-bottom: 8px;
-        margin-bottom: 10px;
-    }
-    .logo img { width: 60px; height: auto; border-radius: 0; }
-    .brand { flex: auto; text-align: left; }
-    .brand h1 { 
-        margin: 0 0 3px 0; 
-        font-size: 12px; 
-        font-weight: 700; 
-        color: #000; 
-        line-height: 1.1; 
-    }
-    .brand p { 
-        margin: 0; 
-        font-size: 8px; /* Pequeño para info extra */
-        color: #555; 
-        line-height: 1.1;
-    }
-    /* Separar RUT y Teléfono */
-    .brand #contact-info { 
-        font-size: 9px; 
-        font-weight: 600; 
-        color: #333; 
-        margin-bottom: 2px;
-    }
-    .meta { 
-        background: none; 
-        padding: 0; 
-        border-radius: 0;
-        text-align: right; 
-    }
-    .meta .num { 
-        font-weight: 800; 
-        color: var(--blue); /* Mantiene el azul corporativo */
-        font-size: 13px; 
-        margin-bottom: 2px; 
-    }
-    .meta .fecha { 
-        font-size: 9px; 
-        color: #555; 
-        align-items: flex-end; 
-    }
-
-    /* Layout General PDF */
+    .controls, .statusbar, .btn-section-add, .btn-del { display: none !important; }
     .section-title h2 { 
-        font-size: 10px; 
-        background: none; 
-        padding: 0 0 5px 5px;
-        border: none; 
-        border-left: 3pt solid var(--blue); /* Azul corporativo */
-        color: var(--blue); 
-        border-bottom: none; 
-        margin-bottom: 5px;
+      background: none; 
+      border: none; 
+      padding-left: 0; 
+      color: #000; 
+      border-bottom: 2pt solid #000; 
+      font-size: 11pt; 
+      font-weight: bold; 
+      text-transform: uppercase;
     }
-    
-    label { 
-        font-size: 8px; /* Labels muy pequeños */
-        color: #333; 
-        margin-bottom: 3px; 
-    }
-    
-    /* Grid 2 columnas para Cliente y Equipo */
-    .grid, .grid-eq {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
-    /* Los inputs no tienen padding/border para el PDF, solo el valor */
     input, textarea, select { 
-        border: none; 
-        border-bottom: 0.5pt solid #ccc; /* Línea suave para ver dónde se llenó */
-        padding: 0; 
-        font-family: inherit; 
-        font-size: 9px; 
-        height: auto; 
-        background: none;
-        outline: none;
+      border: none; 
+      padding: 0; 
+      font-family: inherit; 
+      font-size: 10pt; 
+      height: auto; 
+      color: #000; 
     }
-    /* Contadores en línea */
-    #contadores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-    #contadores label { margin-bottom: 3px; }
-    
-    /* Repuestos en PDF (CRÍTICO: Tabla compacta o mensaje) */
-    .rep-row {
-        display: grid;
-        grid-template-columns: 2fr 1fr; /* Repuesto (60%) | Serie (40%) */
-        gap: 0;
-        margin-bottom: 2px;
-        padding: 2px 4px;
-        border: 0.5pt solid #ccc;
-        border-radius: 0;
-        background: none;
+    label { 
+      font-size: 8pt; 
+      color: #333; 
+      font-weight: semibold; 
     }
-    .rep-row label { display: none; } /* Ocultar labels de Repuesto/Serie en PDF */
-    .rep-row input { 
-        border: none; 
-        padding: 0;
-        font-size: 8px; /* Repuestos muy pequeños para ahorrar espacio */
+    .rep-row { 
+      border: none; 
+      padding: 0; 
+      margin-bottom: 5pt; 
+      grid-template-columns: 2fr 1fr; 
+      border-bottom: 0.5pt solid #ccc;
     }
-    .rep-row > div:first-child { border-right: 0.5pt solid #ccc; padding-right: 5px; }
-    
-    .rep-empty {
-        display: block !important; /* Asegurar que se muestre si está vacío */
-        font-size: 9px;
-        color: #666;
-        padding: 5px;
-        border: 0.5pt solid #ccc;
-        margin: 5px 0 10px 0;
-        text-align: left;
+    header, .header-optimized { 
+      border-bottom: 1pt solid #000; 
+      padding: 10pt;
+      page-break-after: avoid;
     }
-
-    /* Trabajo Realizado */
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo-img {
+      width: 1in;
+      height: auto;
+    }
+    .order-badge {
+      background: transparent;
+      color: #000;
+      border: 0.5pt solid #000;
+      padding: 5pt 10pt;
+      font-size: 14pt;
+      font-weight: bold;
+    }
+    .company-title {
+      font-size: 16pt;
+      font-weight: bold;
+      text-align: center;
+    }
+    .company-details {
+      font-size: 9pt;
+      color: #333;
+      text-align: center;
+    }
+    .header-meta {
+      text-align: right;
+    }
+    .date-input {
+      font-size: 10pt;
+      color: #000;
+    }
+    .exp { 
+      border: 0.5pt solid #ccc; 
+      padding: 10pt; 
+      background: none;
+    }
+    .exp-hdr { 
+      font-weight: bold; 
+      color: #000;
+    }
+    .exp-hdr::after { display: none; }
+    .exp-cnt { max-height: none; }
     .trab-desc {
-        border: 0.5pt solid #ccc;
-        padding: 5px;
-        font-size: 9px;
-        color: #000;
-        line-height: 1.3;
-        background: none;
+      font-size: 9pt;
+      line-height: 1.4;
+      color: #000;
     }
-    .chk-grid { display: none; } /* Ocultar checkboxes en PDF */
-
-    /* Observaciones */
     #obs {
-        min-height: 30px; 
-        max-height: 60px;
-        border: 0.5pt solid #ccc; 
-        padding: 4px; 
-        font-size: 9px;
-        overflow: hidden; /* Evitar que el textarea crezca demasiado */
+      font-size: 9pt;
+      line-height: 1.4;
     }
-
-    /* Firmas (CRÍTICO: Sin línea decorativa y con línea de firma) */
-    .footer { border-top: 1pt solid #ccc; }
-    .firma-line { display: none; } /* Eliminar la línea decorativa de pantalla */
-    .firmas { gap: 40px; }
-    .firmas input {
-        border: none;
-        border-bottom: 1pt solid #000; /* Línea de firma real */
-        margin-top: 15px; /* Espacio para la firma manuscrita */
-        font-size: 9px;
+    .footer {
+      position: running(footer);
+      bottom: 0;
+      width: 100%;
+      font-size: 7pt;
+      color: #666;
+      text-align: center;
+      page-break-before: auto;
     }
-    .firmas label { margin-bottom: 0; }
+    .firmas {
+      border-top: 0.5pt solid #ccc;
+      padding-top: 10pt;
+    }
+    .firma-line {
+      border-top: 1pt dotted #000;
+      font-size: 8pt;
+      color: #000;
+    }
+    /* Control de saltos de página */
+    .section-title, .exp, .footer {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    header {
+      page-break-after: avoid;
+    }
   }
 </style>
 </head>
@@ -495,24 +645,49 @@
 </div>
 
 <div class="container" role="main">
-  <header>
-    <div class="logo"><img src="logo_realtech.png" alt="Realtech logo" onerror="this.style.display='none'"></div>
-    <div class="brand">
-      <h1>Realtech SpA — Orden de Servicio Técnico</h1>
-      <p id="contact-info">RUT: 77.651.114-5 | Tel: <span id="tel-header">+56 9 1234 5678</span></p>
-      <p>Arturo Prat 780 of 203A, Temuco</p>
-      <p>realtech.spa@gmail.com</p>
+  <!-- Header optimizado con wrappers para mejor layout sin romper IDs -->
+  <header class="header-optimized" role="banner">
+    <div class="header-top">
+      <div class="logo-container">
+        <img src="logo_realtech.png" alt="Realtech SpA Logo" class="logo-img" onerror="this.style.display='none'">
+      </div>
+      <div class="order-badge" aria-label="Número de orden">
+        <span class="badge-label">N°</span>
+        <span class="badge-number" id="num">XXXX</span>
+      </div>
     </div>
-    <div class="meta">
-      <div class="num" id="num">N° XXXX</div> 
-      <div class="fecha">Emisión: <input type="date" id="fecha" /></div>
+
+    <div class="company-info">
+      <h1 class="company-title">
+        <span class="company-name">Realtech SpA</span>
+        <span class="document-type">Orden de Servicio Técnico</span>
+      </h1>
+      <div class="company-details">
+        <span class="detail-item">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+          RUT: 77.651.114-5
+        </span>
+        <span class="detail-item">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          Arturo Prat 780 of 203A, Temuco
+        </span>
+        <span class="detail-item">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          realtech.spa@gmail.com
+        </span>
+      </div>
+    </div>
+
+    <div class="header-meta">
+      <label for="fecha" class="meta-label">Emisión</label>
+      <input type="date" id="fecha" class="date-input" aria-label="Fecha de emisión" />
     </div>
   </header>
 
   <section>
     <div class="section-title"><h2>Información del Cliente</h2></div>
     <div class="grid" role="form" aria-label="Información del cliente">
-      <div style="grid-column: 1/-1">
+      <div class="full-width">
         <label for="cliNom">Cliente / Empresa</label>
         <input type="text" id="cliNom" list="cli-list" placeholder="Nombre del cliente..." autocomplete="off">
       </div>
@@ -520,13 +695,11 @@
         <label for="cliRut">RUT</label>
         <input type="text" id="cliRut" placeholder="XX.XXX.XXX-X">
       </div>
+      <div class="full-width"><label for="cliDir">Dirección</label><input type="text" id="cliDir" placeholder="Dirección"></div>
       <div><label for="cliCiu">Ciudad</label><input type="text" id="cliCiu" placeholder="Ciudad"></div>
-
-      <div style="grid-column: 1/-1"><label for="cliDir">Dirección</label><input type="text" id="cliDir" placeholder="Dirección"></div>
-      
       <div><label for="cliCon">Contacto</label><input type="text" id="cliCon" placeholder="Atención a..."></div>
+      <div class="full-width"><label for="cliMail">Email</label><input type="text" id="cliMail" placeholder="correo@ejemplo.com"></div>
       <div><label for="cliTel">Teléfono</label><input type="text" id="cliTel" placeholder="+56 9 ..."></div>
-      <div style="grid-column: 1/-1"><label for="cliMail">Email</label><input type="text" id="cliMail" placeholder="correo@ejemplo.com"></div>
     </div>
   </section>
 
@@ -545,7 +718,7 @@
       </div>
     </div>
 
-    <div id="contadores" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);margin-bottom:var(--space-sm)">
       <div><label for="contBN">Contador B/N</label><input type="number" id="contBN" placeholder="0" min="0"></div>
       <div><label for="contColor">Contador Color</label><input type="number" id="contColor" placeholder="0" min="0"></div>
     </div>
@@ -554,67 +727,53 @@
   <section>
     <div class="section-title"><h2>Repuestos Instalados</h2></div>
     <div class="exp">
-      <div class="exp-hdr" onclick="toggle(this)">
-        <strong>Repuestos instalados</strong>
-        <span id="ri-count" style="color:var(--sub);margin-left:10px"></span>
-      </div>
-      <div class="exp-cnt" id="repInst" style="display:none">
-        <div class="rep-empty" id="ri-empty">Sin repuestos instalados</div>
+      <div class="exp-hdr" onclick="toggle(this)"><strong>Repuestos instalados</strong><span id="ri-count" style="color:var(--sub)"></span></div>
+      <div class="exp-cnt" id="repInst">
         <div class="rep-row">
           <div>
             <label>Repuesto</label>
-            <input type="text" class="rep-nom" list="rep-list" 
-                   placeholder="Nombre del repuesto" oninput="updateRepCount()">
+            <input type="text" class="rep-nom" list="rep-list" placeholder="Nombre del repuesto">
           </div>
           <div>
             <label>Serie (opcional)</label>
             <input type="text" class="rep-ser" placeholder="N° Serie">
           </div>
           <div style="align-self:center">
-            <button class="btn-del" onclick="delRep(this)">×</button>
+            <button class="btn-del" onclick="this.closest('.rep-row').remove()">Eliminar</button>
           </div>
         </div>
       </div>
-      <button type="button" class="btn-section-add" onclick="addRepInst()">
-        + Agregar Repuesto Instalado
-      </button>
+      <button type="button" class="btn-section-add" onclick="addRepInst()">+ Agregar Repuesto Instalado</button>
     </div>
   </section>
 
   <section>
     <div class="section-title"><h2>Repuestos Retirados</h2></div>
     <div class="exp">
-      <div class="exp-hdr" onclick="toggle(this)">
-        <strong>Repuestos retirados</strong>
-        <span id="rr-count" style="color:var(--sub);margin-left:10px"></span>
-      </div>
-      <div class="exp-cnt" id="repRet" style="display:none">
-        <div class="rep-empty" id="rr-empty">Sin repuestos retirados</div>
+      <div class="exp-hdr" onclick="toggle(this)"><strong>Repuestos retirados</strong></div>
+      <div class="exp-cnt" id="repRet">
         <div class="rep-row">
           <div>
             <label>Repuesto</label>
-            <input type="text" class="rep-ret-nom" list="rep-list" 
-                   placeholder="Nombre del repuesto" oninput="updateRepCount()">
+            <input type="text" class="rep-ret-nom" list="rep-list" placeholder="Nombre del repuesto">
           </div>
           <div>
             <label>Serie (opcional)</label>
             <input type="text" class="rep-ret-ser" placeholder="N° Serie">
           </div>
           <div style="align-self:center">
-            <button class="btn-del" onclick="delRep(this)">×</button>
+            <button class="btn-del" onclick="this.closest('.rep-row').remove()">Eliminar</button>
           </div>
         </div>
       </div>
-      <button type="button" class="btn-section-add" onclick="addRepRet()">
-        + Agregar Repuesto Retirado
-      </button>
+      <button type="button" class="btn-section-add" onclick="addRepRet()">+ Agregar Repuesto Retirado</button>
     </div>
   </section>
 
   <section>
     <div class="section-title"><h2>Trabajo Realizado</h2></div>
     <div class="exp">
-      <div class="exp-cnt" style="display:block">
+      <div class="exp-cnt">
         <div class="chk-grid" id="trabChk" aria-live="polite"></div>
         <div class="trab-desc" id="trabDesc">No hay trabajos seleccionados</div>
       </div>
@@ -649,8 +808,14 @@
 <datalist id="tech-list"></datalist>
 
 <div class="controls" role="region" aria-label="Controles">
-  <button class="btn-blue" onclick="window.print()">Imprimir</button>
-  <button class="btn-save" id="saveBtn" onclick="save()">GUARDAR</button>
+  <button class="btn-blue" onclick="window.print()">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H7V4h10v3z"/></svg>
+    Imprimir
+  </button>
+  <button class="btn-save" id="saveBtn" onclick="save()">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    GUARDAR
+  </button>
 </div>
 
 <script>
@@ -667,6 +832,7 @@ let appState = {
   techName: null // Nombre del técnico
 };
 
+// CLAVE: Se incrementa la versión a 4 para forzar la creación del store 'tecnicos'
 const req = indexedDB.open('RealtechDB', 4);
 
 req.onupgradeneeded = (e) => {
@@ -678,6 +844,7 @@ req.onupgradeneeded = (e) => {
   if (!idb.objectStoreNames.contains('servicios')) idb.createObjectStore('servicios', { keyPath: 'id', autoIncrement: true });
   if (!idb.objectStoreNames.contains('ordenesPend')) idb.createObjectStore('ordenesPend', { keyPath: 'id', autoIncrement: true });
   if (!idb.objectStoreNames.contains('config')) idb.createObjectStore('config', { keyPath: 'key' });
+  // Nuevo store para técnicos
   if (!idb.objectStoreNames.contains('tecnicos')) idb.createObjectStore('tecnicos', { keyPath: 'id' });
 };
 
@@ -737,6 +904,7 @@ function dbDelete(store, key){
     } catch (e) { reject(e); }
   });
 }
+// NUEVO: Función para eliminar todos los registros de una tienda (útil para actualizar listas maestras)
 function dbDelAll(store){
   return new Promise((resolve) => {
     const request = tx(store, 'readwrite').clear();
@@ -753,12 +921,14 @@ function showStatus(text, isError=false){
   el.textContent = text;
   el.style.color = isError ? 'var(--danger)' : 'inherit';
   if(isError){
+    // Si hay error, solo mostrar texto y ocultar badge/sync
     badge.style.display='none';
     syncBtn.style.display='none';
   }
 }
 
 function notif(msg, type='ok'){
+  // simple accessible notification via statusbar temporarily
   const el = document.getElementById('statusTxt');
   el.textContent = msg;
   el.style.color = type==='err' ? 'var(--danger)' : 'inherit';
@@ -789,6 +959,8 @@ async function initApp(){
   const lastTech = await dbGet('config', 'lastTech');
   if (lastTech && lastTech.id) {
     document.getElementById('nomTec').value = lastTech.name;
+    // Forzamos la ejecución de onTechSelect si ya hay un técnico guardado
+    // Nota: onTechSelect actualizará appState.techId y llamará a loadTechFolio
     await onTechSelect.call(document.getElementById('nomTec'));
   }
   
@@ -801,30 +973,31 @@ async function initApp(){
   syncServer();
 
   // connectivity events
+  // Cuando se vuelve a conectar, llama a updateStatus (que solo actualiza el texto) y luego a sync()
   window.addEventListener('online', () => { updateStatus(); sync(); });
   window.addEventListener('offline', updateStatus);
   updateStatus();
   
   // Inicializa el número compuesto (puede ser N° XX0001 si no hay técnico)
   renderNum();
-
-  // Inicializar contadores de repuestos
-  updateRepCount();
 }
 
 // Manejador al seleccionar técnico
 async function onTechSelect() {
   const name = this.value.trim();
   const techList = await dbGetAll('tecnicos');
+  // Buscar el técnico por nombre para obtener su ID
   const selectedTech = techList.find(t => t.nombre === name);
 
   if (selectedTech) {
     appState.techId = selectedTech.id;
     appState.techName = selectedTech.nombre;
     
+    // Guardar el último técnico usado en la configuración
     await dbSet('config', { key: 'lastTech', id: appState.techId, name: appState.techName });
     await loadTechFolio(appState.techId);
   } else {
+    // Si el nombre no coincide, resetear el folio al genérico
     appState.techId = null;
     appState.folio = 1;
     renderNum();
@@ -837,6 +1010,7 @@ async function loadTechFolio(techId) {
     if (!techId) return;
     const key = `folio_${techId}`;
     const cfg = await dbGet('config', key);
+    // Si no hay configuración para este técnico, empezar en 1 (o el valor guardado)
     appState.folio = cfg ? (cfg.value || 1) : 1;
     renderNum();
 }
@@ -847,12 +1021,13 @@ async function loadLists(){
   const marcas = await dbGetAll('marcas');
   const modelos = await dbGetAll('modelos');
   const reps = await dbGetAll('repuestos');
-  const tecnicos = await dbGetAll('tecnicos');
+  const tecnicos = await dbGetAll('tecnicos'); // NUEVO
 
   document.getElementById('cli-list').innerHTML = clientes.map(c => `<option value="${escapeHtml(c.nombre)}">`).join('');
   document.getElementById('marca-list').innerHTML = marcas.map(m => `<option value="${escapeHtml(m.nombre)}">`).join('');
   document.getElementById('modelo-list').innerHTML = modelos.map(m => `<option value="${escapeHtml(m.nombre)}">`).join('');
   document.getElementById('rep-list').innerHTML = reps.map(r => `<option value="${escapeHtml(r.nombre)}">`).join('');
+  // Llenar datalist de técnicos
   document.getElementById('tech-list').innerHTML = tecnicos.map(t => `<option value="${escapeHtml(t.nombre)}">`).join(''); 
 }
 
@@ -864,6 +1039,7 @@ async function loadServices(){
     const d = document.createElement('div');
     d.className = 'chk-item';
     const id = `srv-${s.id || i}`;
+    // Si 's' es un objeto {value: 'Servicio'}, usa s.value. Si es solo un string 'Servicio', usa s.
     const serviceValue = s.value || s; 
     d.innerHTML = `<input type="checkbox" id="${id}" value="${serviceValue}" onchange="updateTrab()">
                    <label for="${id}" style="margin:0;font-weight:500;width:100%">${escapeHtml(serviceValue)}</label>`;
@@ -884,8 +1060,6 @@ async function onClientSelect(){
     document.getElementById('cliCon').value = c.contacto || '';
     document.getElementById('cliMail').value = c.email || '';
     document.getElementById('cliTel').value = c.telefono || '';
-    // Actualizar teléfono en el header de impresión si se carga del cliente (si es necesario)
-    document.getElementById('tel-header').textContent = c.telefono || 'N/A';
   }
 }
 
@@ -902,86 +1076,31 @@ function updateTrab(){
   }
 }
 
-/* ------------------ Update Repuestos Count (NUEVO/MODIFICADO) ------------------ */
-function updateRepCount() {
-  // Contar repuestos instalados con datos
-  const riRows = document.querySelectorAll('#repInst .rep-row');
-  const riCount = Array.from(riRows).filter(r => 
-    r.querySelector('.rep-nom')?.value.trim()
-  ).length;
-  
-  // Contar repuestos retirados con datos
-  const rrRows = document.querySelectorAll('#repRet .rep-row');
-  const rrCount = Array.from(rrRows).filter(r => 
-    r.querySelector('.rep-ret-nom')?.value.trim()
-  ).length;
-  
-  // Actualizar contadores visibles
-  document.getElementById('ri-count').textContent = riCount > 0 ? `(${riCount})` : '';
-  document.getElementById('rr-count').textContent = rrCount > 0 ? `(${rrCount})` : '';
-  
-  // Mostrar/ocultar mensajes "Sin repuestos..."
-  document.getElementById('ri-empty').style.display = riCount > 0 ? 'none' : 'block';
-  document.getElementById('rr-empty').style.display = rrCount > 0 ? 'none' : 'block';
-}
-
-/* ------------------ Add / remove repuestos rows (MODIFICADO) ------------------ */
-function delRep(button) {
-  button.closest('.rep-row').remove();
-  updateRepCount();
-}
-
+/* ------------------ Add / remove repuestos rows ------------------ */
 function addRepInst(){
-  const container = document.getElementById('repInst');
-  const rows = container.querySelectorAll('.rep-row').length;
-  if (rows >= 20) { notif('Máximo 20 repuestos', 'err'); return; }
-  
-  const row = document.createElement('div');
-  row.className = 'rep-row';
-  row.innerHTML = `
-    <div>
-      <label>Repuesto</label>
-      <input type="text" class="rep-nom" list="rep-list" 
-             placeholder="Nombre repuesto" oninput="updateRepCount()">
-    </div>
-    <div>
-      <label>Serie</label>
-      <input type="text" class="rep-ser" placeholder="N° Serie">
-    </div>
-    <div style="align-self:center">
-      <button class="btn-del" onclick="delRep(this)">×</button>
-    </div>
-  `;
-  container.appendChild(row);
-  updateRepCount();
+  const c = document.getElementById('repInst');
+  const rows = c.querySelectorAll('.rep-row').length;
+  if(rows >= 20){ notif('Máximo 20 repuestos', 'err'); return; }
+  const d = document.createElement('div');
+  d.className = 'rep-row';
+  d.innerHTML = `<div><label>Repuesto</label><input type="text" class="rep-nom" list="rep-list" placeholder="Nombre repuesto"></div>
+                 <div><label>Serie</label><input type="text" class="rep-ser" placeholder="N° Serie"></div>
+                 <div style="align-self:center"><button class="btn-del" onclick="this.closest('.rep-row').remove()">Eliminar</button></div>`;
+  c.appendChild(d);
 }
-
 function addRepRet(){
-  const container = document.getElementById('repRet');
-  const rows = container.querySelectorAll('.rep-row').length;
-  if (rows >= 20) { notif('Máximo 20 repuestos', 'err'); return; }
-  
-  const row = document.createElement('div');
-  row.className = 'rep-row';
-  row.innerHTML = `
-    <div>
-      <label>Repuesto</label>
-      <input type="text" class="rep-ret-nom" list="rep-list" 
-             placeholder="Nombre repuesto" oninput="updateRepCount()">
-    </div>
-    <div>
-      <label>Serie</label>
-      <input type="text" class="rep-ret-ser" placeholder="N° Serie">
-    </div>
-    <div style="align-self:center">
-      <button class="btn-del" onclick="delRep(this)">×</button>
-    </div>
-  `;
-  container.appendChild(row);
-  updateRepCount();
+  const c = document.getElementById('repRet');
+  const rows = c.querySelectorAll('.rep-row').length;
+  if(rows >= 20){ notif('Máximo 20 repuestos', 'err'); return; }
+  const d = document.createElement('div');
+  d.className = 'rep-row';
+  d.innerHTML = `<div><label>Repuesto</label><input type="text" class="rep-ret-nom" list="rep-list" placeholder="Nombre repuesto"></div>
+                 <div><label>Serie</label><input type="text" class="rep-ret-ser" placeholder="N° Serie"></div>
+                 <div style="align-self:center"><button class="btn-del" onclick="this.closest('.rep-row').remove()">Eliminar</button></div>`;
+  c.appendChild(d);
 }
 
-/* ------------------ Save / Persist functions (INTACTAS) ------------------ */
+/* ------------------ Save / Persist functions ------------------ */
 async function saveClienteIfNew(cliObj){
   if(!cliObj || !cliObj.nombre) return;
   const exists = await dbGet('clientes', cliObj.nombre);
@@ -1011,10 +1130,10 @@ async function saveRepIfNew(r){
 async function save(){
   const saveBtn = document.getElementById('saveBtn');
   
-  if (isSaving || saveBtn.disabled) return;
+  if (isSaving || saveBtn.disabled) return; // Control de concurrencia y visual
 
   isSaving = true;
-  saveBtn.disabled = true;
+  saveBtn.disabled = true; // Deshabilitar inmediatamente
 
   try {
     if (!appState.techId) {
@@ -1025,10 +1144,12 @@ async function save(){
     const cliNom = document.getElementById('cliNom').value.trim();
     if(!cliNom){ notif('Ingrese el nombre del cliente', 'err'); return; }
 
+    // 1. Construir el folio compuesto
     const folioActual = String(appState.folio).padStart(4,'0');
     const techPrefijo = String(appState.techId).padStart(2,'0');
-    const correlativoCompleto = techPrefijo + folioActual;
+    const correlativoCompleto = techPrefijo + folioActual; // Ej: 010006
 
+    // Prepare client object & persist if new
     const cliData = {
       nombre: cliNom,
       rut: document.getElementById('cliRut').value.trim(),
@@ -1040,6 +1161,7 @@ async function save(){
     };
     await saveClienteIfNew(cliData);
 
+    // Collect repuestos
     const repInst = Array.from(document.querySelectorAll('#repInst .rep-row')).map(r => {
       return {
         nombre: (r.querySelector('.rep-nom')?.value || '').trim(),
@@ -1053,9 +1175,12 @@ async function save(){
       };
     }).filter(x => x.nombre);
 
+    // Trabajos
     const trab = Array.from(document.querySelectorAll('#trabChk input:checked')).map(cb => cb.value);
 
+    // Equipo
     const orden = {
+      // Usamos el folio compuesto
       numero: correlativoCompleto, 
       fecha: document.getElementById('fecha').value || new Date().toISOString().split('T')[0],
       cliente: cliData,
@@ -1074,40 +1199,43 @@ async function save(){
       extra: { 
         tecnico: appState.techName, 
         clienteFirma: document.getElementById('nomCliFirma').value.trim(),
-        idTecnico: appState.techId,
-        folioTecnico: appState.folio
+        idTecnico: appState.techId, // Guardamos el ID por si se necesita en el backend
+        folioTecnico: appState.folio // Guardamos el folio simple (ej: 6)
       }
     };
 
+    // Save reuso: add marca/modelo/repuestos to master lists
     if(orden.equipo.marca) await saveMarcaIfNew(orden.equipo.marca);
     if(orden.equipo.modelo) await saveModeloIfNew(orden.equipo.modelo);
     repInst.forEach(r => { if(r.nombre) saveRepIfNew(r.nombre); });
     repRet.forEach(r => { if(r.nombre) saveRepIfNew(r.nombre); });
 
+    // Save order to ordenesPend (offline queue)
     await dbAdd('ordenesPend', orden);
 
+    // Incremento y persistencia del número ESPECÍFICO DEL TÉCNICO
     appState.folio++;
     const newFolioKey = `folio_${appState.techId}`;
     await dbSet('config', { key: newFolioKey, value: appState.folio });
     
+    // Update UI
     renderNum();
 
     notif(`Orden N°${correlativoCompleto} guardada`, 'ok');
     renderPendingBadge();
     
-    // Limpiar campos
+    // Limpiar campos (excepto fecha y técnico)
     document.querySelectorAll('input:not(#fecha):not(#nomTec):not(#num), textarea, select').forEach(i => {
       if(i.type === 'select-one') i.value = ''; else i.value = '';
     });
-    // Limpiar repuestos, dejando solo una fila por sección
     document.querySelectorAll('#repInst .rep-row, #repRet .rep-row').forEach((r, i) => { 
-        if (i > 0) r.remove(); 
-        r.querySelectorAll('input').forEach(i => i.value = '');
+      if (i > 0) r.remove(); // Deja solo la primera fila vacía
+      r.querySelectorAll('input').forEach(i => i.value = '');
     });
     document.querySelectorAll('#trabChk input').forEach(c => c.checked = false);
     updateTrab();
-    updateRepCount(); // Actualizar el estado de "Sin repuestos"
 
+    // Try sync immediately if online
     if(navigator.onLine) await sync();
   
   } catch (e) {
@@ -1115,11 +1243,11 @@ async function save(){
     notif('Error crítico al guardar. Consulte la consola.', 'err');
   } finally {
     isSaving = false;
-    saveBtn.disabled = false;
+    saveBtn.disabled = false; // Re-habilitar el botón
   }
 }
 
-/* ------------------ Sync logic (INTACTA) ------------------ */
+/* ------------------ Sync logic ------------------ */
 async function renderPendingBadge(){
   const pend = await dbGetAll('ordenesPend');
   const badge = document.getElementById('badge');
@@ -1135,16 +1263,16 @@ async function renderPendingBadge(){
 }
 
 async function sync(){
-  if(isSyncing) return;
+  if(isSyncing) return; // Salir si ya hay una sincronización en curso
   if(!navigator.onLine) { notif('Sin conexión — pendiente', 'err'); return; }
   const pend = await dbGetAll('ordenesPend');
   if(pend.length === 0){ notif('No hay órdenes pendientes', 'ok'); return; }
 
-  isSyncing = true;
+  isSyncing = true; // Establecer bandera
   showStatus('Sincronizando...');
   let successes = 0, failures = 0;
   
-  try {
+  try { // Usar try/finally para garantizar que la bandera se restablezca
     for(const o of pend){
       try {
         const res = await fetch(URL, {
@@ -1166,7 +1294,7 @@ async function sync(){
       }
     }
   } finally {
-    isSyncing = false;
+    isSyncing = false; // Restablecer bandera
   }
 
   await renderPendingBadge();
@@ -1180,15 +1308,18 @@ async function syncServer(){
   if(!navigator.onLine) { showStatus('Offline'); return; }
   try {
     showStatus('Actualizando...');
+    // Enviamos el ID del técnico actual al servidor
     const r = await fetch(`${URL}?action=loadData&techId=${appState.techId || ''}`);
     const data = await r.json();
     if(!data.success){ showStatus('Sin datos server'); return; }
 
+    // 1. Cargar y actualizar técnicos
     if(Array.isArray(data.tecnicos)) { 
-      await dbDelAll('tecnicos');
+      await dbDelAll('tecnicos'); // Limpiar para evitar duplicados si se actualizan IDs
       for(const t of data.tecnicos) await dbSet('tecnicos', t); 
     }
     
+    // 2. Cargar otras listas
     if(Array.isArray(data.cli)) {
       for(const c of data.cli){
         if(!c || !c.nombre) continue;
@@ -1199,14 +1330,16 @@ async function syncServer(){
     if(Array.isArray(data.modelos)) for(const m of data.modelos) await dbSet('modelos',{nombre:m});
     if(Array.isArray(data.reps)) for(const r of data.reps) await dbSet('repuestos',{nombre:r});
     if(Array.isArray(data.servs)){
-      await dbDelAll('servicios');
+      await dbDelAll('servicios'); // Limpiar la lista de servicios antes de volver a agregar
       for(const s of data.servs) await dbAdd('servicios', { value: s });
     }
     
+    // 3. Corregir el correlativo específico del técnico actual
     if(appState.techId && data.lastNumTech){
         const serverNum = parseInt(data.lastNumTech, 10);
         const folioKey = `folio_${appState.techId}`;
         
+        // Si el número del servidor es válido y es mayor o igual al que tengo localmente
         if(!isNaN(serverNum) && serverNum >= appState.folio){
            appState.folio = serverNum + 1;
            await dbSet('config', { key: folioKey, value: appState.folio });
@@ -1224,17 +1357,13 @@ async function syncServer(){
   }
 }
 
-/* ------------------ Utilities (MODIFICADO TOGGLE) ------------------ */
-function toggle(hdr){ 
-    const cnt = hdr.nextElementSibling; 
-    if(!cnt) return; 
-    // Usar el estilo inline para forzar el cambio
-    cnt.style.display = (cnt.style.display === 'none' || cnt.style.display === '') ? 'block' : 'none'; 
-}
+/* ------------------ Utilities ------------------ */
+function toggle(hdr){ const cnt = hdr.nextElementSibling; if(!cnt) return; cnt.style.display = (cnt.style.display === 'none' || cnt.style.display === '') ? 'block' : 'none'; }
 function escapeHtml(str){ if(!str) return ''; return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
 
 /* ------------------ Status & connectivity ------------------ */
 function updateStatus(){
+  // Solo actualiza el estado. La sincronización se maneja por eventos o por 'save()'
   if(navigator.onLine){ showStatus('Conectado'); } else { showStatus('Offline', true); }
 }
 
@@ -1243,19 +1372,28 @@ document.addEventListener('focusout', async (e) => {
   const t = e.target;
   if(t.id === 'eqMarca' && t.value.trim()) await saveMarcaIfNew(t.value.trim());
   if(t.id === 'eqMod' && t.value.trim()) await saveModeloIfNew(t.value.trim());
-  // Repuestos: oninput también llama a updateRepCount, focusout solo guarda la lista maestra.
-  if((t.classList.contains('rep-nom') || t.classList.contains('rep-ret-nom')) && t.value.trim()) await saveRepIfNew(t.value.trim());
+  if(t.classList.contains('rep-nom') && t.value.trim()) await saveRepIfNew(t.value.trim());
+  if(t.classList.contains('rep-ret-nom') && t.value.trim()) await saveRepIfNew(t.value.trim());
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  // CRÍTICO: "Trabajo Realizado" (exp-cnt anterior) debe estar en display:block (ya lo está)
-  // CRÍTICO: Repuestos deben empezar colapsados (display:none en el HTML) y se expandirán con toggle si se hace click.
-  document.querySelectorAll('.exp-cnt').forEach(c => {
-      // Dejar 'Trabajo Realizado' expandido (trabDesc)
-      if(c.id !== 'repInst' && c.id !== 'repRet') c.style.display = 'block'; 
-  });
+  document.querySelectorAll('.exp .exp-cnt').forEach(c => c.style.display = 'block');
 });
 </script>
+
+<!--
+TESTING CHECKLIST:
+☐ Smartphone 375px (iPhone SE)
+☐ Smartphone 428px (iPhone 14 Pro Max)
+☐ Tablet 768px (iPad)
+☐ Desktop 1024px+
+☐ Print preview Chrome/Firefox
+☐ PDF generado en formato carta
+☐ Funciones JS: save(), sync(), addRepInst(), addRepRet()
+☐ IndexedDB: guardado offline
+☐ Sincronización online
+☐ Accesibilidad: navegación teclado
+-->
 
 </body>
 </html>
