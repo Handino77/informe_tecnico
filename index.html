@@ -529,32 +529,35 @@ async function save() {
 async function sync() {
   if (isSyncing || !navigator.onLine) return;
   isSyncing = true;
-
-  const tx = db.transaction('ordenesPend', 'readwrite');
-  const store = tx.objectStore('ordenesPend');
-  const cursorRequest = store.openCursor();
-
-  cursorRequest.onsuccess = async (e) => {
-    const cursor = e.target.result;
-    if (cursor) {
+  try {
+    const pending = await new Promise((resolve) => {
+      const tx = db.transaction('ordenesPend', 'readonly');
+      tx.objectStore('ordenesPend').getAll().onsuccess = (e) => resolve(e.target.result);
+    });
+    for (const order of pending) {
       try {
         const response = await fetch(URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(cursor.value)
+          body: JSON.stringify(order)
         });
         if (response.ok) {
-          cursor.delete();
+          await new Promise((resolve, reject) => {
+            const tx = db.transaction('ordenesPend', 'readwrite');
+            tx.objectStore('ordenesPend').delete(order.id).onsuccess = resolve;
+            tx.onerror = reject;
+          });
         }
       } catch (error) {
-        console.error('Error en sync:', error);
+        console.error('Error syncing order:', error);
       }
-      cursor.continue();
-    } else {
-      await updateBadge();
-      isSyncing = false;
     }
-  };
+    await updateBadge();
+  } catch (error) {
+    console.error('Sync error:', error);
+  } finally {
+    isSyncing = false;
+  }
 }
 
 // Función para actualizar el badge de pendientes
