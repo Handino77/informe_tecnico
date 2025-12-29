@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
+<title>Orden de Servicio Técnico - Realtech SpA</title>
+<link rel="icon" href="logo_realtech.png" />
+<style>
+  /* --------- Diseño base responsive --------- */
+  :root{
+    --blue: #004a99;
+    --blue-dark: #003370;
+    --muted: #f8fafc;
+    --accent: #38a169;
+    --danger: #e53e3e;
+    --card: #ffffff;
+    --text: #1f2937;
+    --sub: #64748b;
+    --border: #e2e8f0;
+    --radius: 10px;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #f1f5f9;
+    color: var(--text);
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    padding-bottom: 100px; /* Espacio para controles móviles */
+  }
+
+  /* Contenedor Principal */
+  .container {
+    width: 100%;
+    max-width: 980px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 25px;
+    position: relative;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    border-bottom: 2px solid var(--muted);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .logo img { width: 80px; height: auto; border-radius: 6px; object-fit: contain; }
+  .brand { flex: 1; min-width: 200px; }
+  .brand h1 { margin: 0; font-size: 20px; color: var(--blue); line-height: 1.2; }
+  .brand p { margin: 4px 0 0; font-size: 13px; color: var(--sub); line-height: 1.4; }
+  
+  .meta { 
+    text-align: right; 
+    min-width: 140px; 
+    background: var(--muted);
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .meta .num { font-weight: 800; color: var(--blue); font-size: 18px; margin-bottom: 4px; }
+  .meta .fecha { font-size: 13px; color: var(--sub); display: flex; flex-direction: column; align-items: flex-end; }
+  .meta .fecha input { text-align: right; padding: 4px; border: none; background: transparent; font-weight: 600; color: var(--sub); }
+
+  /* Grids Responsivos (La clave del arreglo) */
+  .grid, .grid-eq {
+    display: grid;
+    /* Esto hace que las columnas se adapten automáticamente */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+    align-items: end;
+  }
+  /* Excepciones para campos que deben ocupar todo el ancho si es necesario */
+  .full-width { grid-column: 1 / -1; }
+
+  label { display: block; font-size: 12px; color: var(--blue); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  
+  /* Inputs optimizados para táctil */
+  input[type="text"], input[type="date"], input[type="number"], textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 15px; /* Evita zoom en iOS */
+    color: var(--text);
+    outline: none;
+    transition: all 0.2s;
+    height: 42px; /* Altura mínima táctil */
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(0, 74, 153, 0.1);
+  }
+  textarea { min-height: 80px; resize: vertical; height: auto; }
+
+  /* Títulos de Sección */
+  .section-title { margin: 25px 0 10px; }
+  .section-title h2 {
+    margin: 0; font-size: 14px;
+    background: #f0f7ff;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border-left: 5px solid var(--blue);
+    color: var(--blue);
+    text-transform: uppercase;
+  }
+
+  /* Botón para añadir repuestos dentro de la sección */
+  .btn-section-add {
+    background: #fff;
+    border: 1px solid var(--border);
+    color: var(--blue);
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    width: 100%;
+    margin-top: 15px;
+    transition: background 0.2s;
+  }
+  .btn-section-add:hover { background: var(--muted); }
+
+  /* Bloques expandibles y Repuestos */
+  .exp { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; }
+  .exp-hdr { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+  
+  /* Filas de repuestos responsive */
+  .rep-row {
+    display: grid;
+    grid-template-columns: 1fr 140px 40px;
+    gap: 10px;
+    align-items: end;
+    margin-bottom: 12px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .btn-del {
+    background: #fee2e2; color: var(--danger);
+    border: none; border-radius: 6px;
+    height: 42px; width: 100%;
+    font-weight: bold; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Checkboxes */
+  .chk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+  }
+  .chk-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px; background: #fff;
+    border-radius: 8px; border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .chk-item input { width: 18px; height: 18px; margin: 0; }
+  .trab-desc { margin-top: 10px; padding: 12px; background: #fff; border: 1px solid var(--border); border-radius: 8px; color: var(--sub); font-size: 14px; line-height: 1.5; }
+
+  /* Footer y Firmas */
+  .footer { margin-top: 30px; border-top: 2px solid var(--muted); padding-top: 20px; }
+  .firmas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  .firma-line { margin-top: 5px; border-top: 1px dashed var(--sub); padding-top: 5px; font-size: 11px; text-align: center; color: var(--sub); text-transform: uppercase; }
+
+  /* Controles Flotantes (Botones) */
+  .controls {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    display: flex; flex-direction: column; gap: 10px;
+    z-index: 1000;
+  }
+  .controls button {
+    padding: 12px 20px;
+    border-radius: 50px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    transition: transform 0.1s;
+    min-width: 160px;
+    text-align: center;
+  }
+  .controls button:active { transform: scale(0.96); }
+  .btn-save { background: var(--accent); color: #fff; }
+  .btn-blue { background: var(--blue); color: #fff; }
+
+  /* Status Bar */
+  .statusbar {
+    position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(5px);
+    padding: 8px 16px;
+    border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    z-index: 1100;
+    display: flex; gap: 10px; align-items: center; font-size: 13px;
+    border: 1px solid var(--border);
+    width: max-content;
+    max-width: 90%;
+  }
+
+  /* ---------------- MEDIA QUERIES (Móvil) ---------------- */
+  @media (max-width: 768px) {
+    body { padding: 10px; padding-bottom: 140px; } /* Más espacio abajo para el menú flotante */
+    .container { padding: 15px; border-radius: 0; box-shadow: none; max-width: 100%; }
+    
+    /* Header Stackeado */
+    header { flex-direction: column; text-align: center; gap: 10px; }
+    .brand { width: 100%; }
+    .meta { width: 100%; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+    .meta .fecha { align-items: flex-start; }
+
+    /* Inputs en una sola columna visualmente si es muy angosto */
+    .grid, .grid-eq { grid-template-columns: 1fr; gap: 12px; }
+    
+    /* Repuestos Stackeado */
+    .rep-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .rep-row div:last-child { margin-top: 5px; } /* Botón eliminar */
+
+    /* Firmas Stackeadas */
+    .firmas { grid-template-columns: 1fr; gap: 20px; }
+
+    /* Controles: Barra inferior fija tipo App */
+    .controls {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #fff;
+      padding: 12px;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+      box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+      border-radius: 0;
+    }
+    .controls button {
+      flex: 1;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 13px;
+      min-width: auto;
+      box-shadow: none;
+    }
+    .controls .btn-save { 
+        flex: 2; 
+        margin-left: 5px; 
+        order: 2; 
+        border: none; 
+    }
+    .controls .btn-blue { 
+        flex: 1; 
+        font-size: 13px;
+        padding: 12px;
+        order: 1;
+        display: block; 
+    }
+  }
+
+  @media print {
+    body, .container { background: #fff; margin: 0; padding: 0; box-shadow: none; width: 100%; max-width: 100%; }
+    .controls, .statusbar, .btn-section-add { display: none !important; }
+    .section-title h2 { background: none; border: none; padding-left: 0; color: #000; border-bottom: 2px solid #000; }
+    input, textarea, select { border: none; padding: 0; font-family: inherit; font-size: 12px; height: auto; }
+    .rep-row { border: none; padding: 0; margin-bottom: 5px; grid-template-columns: 2fr 1fr 0px; }
+    .btn-del { display: none; }
+    header { border-bottom: 1px solid #000; }
+  }
+</style>
+</head>
+<body>
+
+<div class="statusbar" id="statusbar" aria-live="polite">
+  <strong id="statusTxt">Cargando...</strong>
+  <span id="badge" class="badge" style="display:none;background:#f97316;color:#fff;padding:2px 6px;border-radius:10px;font-size:11px;">0</span>
+  <button id="syncBtn" style="display:none;margin-left:6px;padding:4px 8px;border-radius:6px;border:none;background:#eef4ff;color:var(--blue);cursor:pointer;font-weight:bold;font-size:11px;">Sincronizar</button>
+</div>
+
+<div class="container" role="main">
+  <header>
+    <div class="logo"><img src="logo_realtech.png" alt="Realtech logo" onerror="this.style.display='none'"></div>
+    <div class="brand">
+      <h1>Realtech SpA — Orden de Servicio Técnico</h1>
+      <p>RUT: 77.651.114-5 — Arturo Prat 780 of 203A, Temuco<br>realtech.spa@gmail.com</p>
+    </div>
+    <div class="meta">
+      <div class="num" id="num">N° XXXX</div> 
+      <div class="fecha">Emisión: <input type="date" id="fecha" /></div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-title"><h2>Información del Cliente</h2></div>
+    <div class="grid" role="form" aria-label="Información del cliente">
+      <div style="grid-column: 1/-1">
+        <label for="cliNom">Cliente / Empresa</label>
+        <input type="text" id="cliNom" list="cli-list" placeholder="Nombre del cliente..." autocomplete="off">
+      </div>
+      <div>
+        <label for="cliRut">RUT</label>
+        <input type="text" id="cliRut" placeholder="XX.XXX.XXX-X">
+      </div>
+
+      <div style="grid-column: 1/-1"><label for="cliDir">Dirección</label><input type="text" id="cliDir" placeholder="Dirección"></div>
+      <div><label for="cliCiu">Ciudad</label><input type="text" id="cliCiu" placeholder="Ciudad"></div>
+      <div><label for="cliCon">Contacto</label><input type="text" id="cliCon" placeholder="Atención a..."></div>
+      <div style="grid-column: 1/-1"><label for="cliMail">Email</label><input type="text" id="cliMail" placeholder="correo@ejemplo.com"></div>
+      <div><label for="cliTel">Teléfono</label><input type="text" id="cliTel" placeholder="+56 9 ..."></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title"><h2>Información del Equipo</h2></div>
+    <div class="grid-eq">
+      <div><label for="eqMarca">Marca Equipo</label><input type="text" id="eqMarca" list="marca-list" placeholder="Marca..." /></div>
+      <div><label for="eqMod">Modelo</label><input type="text" id="eqMod" list="modelo-list" placeholder="Modelo" /></div>
+      <div><label for="eqSer">Serie</label><input type="text" id="eqSer" placeholder="N° de serie" /></div>
+      <div><label for="eqCond">Condición</label>
+        <select id="eqCond">
+          <option value="">Seleccionar...</option>
+          <option value="Arriendo">Arriendo</option>
+          <option value="Venta">Venta</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><label for="contBN">Contador B/N</label><input type="number" id="contBN" placeholder="0" min="0"></div>
+      <div><label for="contColor">Contador Color</label><input type="number" id="contColor" placeholder="0" min="0"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title"><h2>Repuestos Instalados</h2></div>
+    <div class="exp">
+      <div class="exp-hdr" onclick="toggle(this)"><strong>Repuestos instalados</strong><span id="ri-count" style="color:var(--sub)"></span></div>
+      <div class="exp-cnt" id="repInst">
+        <div class="rep-row">
+          <div>
+            <label>Repuesto</label>
+            <input type="text" class="rep-nom" list="rep-list" placeholder="Nombre del repuesto">
+          </div>
+          <div>
+            <label>Serie (opcional)</label>
+            <input type="text" class="rep-ser" placeholder="N° Serie">
+          </div>
+          <div style="align-self:center">
+            <button class="btn-del" onclick="this.closest('.rep-row').remove()">Eliminar</button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn-section-add" onclick="addRepInst()">+ Agregar Repuesto Instalado</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title"><h2>Repuestos Retirados</h2></div>
+    <div class="exp">
+      <div class="exp-hdr" onclick="toggle(this)"><strong>Repuestos retirados</strong></div>
+      <div class="exp-cnt" id="repRet">
+        <div class="rep-row">
+          <div>
+            <label>Repuesto</label>
+            <input type="text" class="rep-ret-nom" list="rep-list" placeholder="Nombre del repuesto">
+          </div>
+          <div>
+            <label>Serie (opcional)</label>
+            <input type="text" class="rep-ret-ser" placeholder="N° Serie">
+          </div>
+          <div style="align-self:center">
+            <button class="btn-del" onclick="this.closest('.rep-row').remove()">Eliminar</button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn-section-add" onclick="addRepRet()">+ Agregar Repuesto Retirado</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title"><h2>Trabajo Realizado</h2></div>
+    <div class="exp">
+      <div class="exp-cnt">
+        <div class="chk-grid" id="trabChk" aria-live="polite"></div>
+        <div class="trab-desc" id="trabDesc">No hay trabajos seleccionados</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title"><h2>Observaciones</h2></div>
+    <textarea id="obs" placeholder="Detalles de la atención..."></textarea>
+  </section>
+
+  <div class="footer">
+    <div class="firmas">
+      <div>
+        <label>Nombre Técnico</label>
+        <input type="text" id="nomTec" list="tech-list" placeholder="Nombre completo">
+        <div class="firma-line">Firma Técnico</div>
+      </div>
+      <div>
+        <label>Nombre Cliente</label>
+        <input type="text" id="nomCliFirma" placeholder="Nombre completo">
+        <div class="firma-line">Firma Cliente</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<datalist id="rep-list"></datalist>
+<datalist id="cli-list"></datalist>
+<datalist id="marca-list"></datalist>
+<datalist id="modelo-list"></datalist>
+<datalist id="tech-list"></datalist>
+
+<div class="controls" role="region" aria-label="Controles">
+  <button class="btn-blue" onclick="window.print()">Imprimir</button>
+  <button class="btn-save" id="saveBtn" onclick="save()">GUARDAR</button>
+</div>
+
+<script>
+/* ------------------ CONFIG ------------------ */
+const URL = 'https://informes-realtech.realtech-spa.workers.dev/';
+let isSyncing = false;
+let isSaving = false; 
+
+/* ------------------ IndexedDB Setup ------------------ */
+let db = null;
+let appState = {
+  folio: 1, // Folio simple para el técnico actual (ej: 6)
+  techId: null, // ID del técnico (ej: 1)
+  techName: null // Nombre del técnico
+};
+
+// CLAVE: Se incrementa la versión a 4 para forzar la creación del store 'tecnicos'
+const req = indexedDB.open('RealtechDB', 4);
+
+req.onupgradeneeded = (e) => {
+  const idb = e.target.result;
+  if (!idb.objectStoreNames.contains('clientes')) idb.createObjectStore('clientes', { keyPath: 'nombre' });
+  if (!idb.objectStoreNames.contains('marcas')) idb.createObjectStore('marcas', { keyPath: 'nombre' });
+  if (!idb.objectStoreNames.contains('modelos')) idb.createObjectStore('modelos', { keyPath: 'nombre' });
+  if (!idb.objectStoreNames.contains('repuestos')) idb.createObjectStore('repuestos', { keyPath: 'nombre' });
+  if (!idb.objectStoreNames.contains('servicios')) idb.createObjectStore('servicios', { keyPath: 'id', autoIncrement: true });
+  if (!idb.objectStoreNames.contains('ordenesPend')) idb.createObjectStore('ordenesPend', { keyPath: 'id', autoIncrement: true });
+  if (!idb.objectStoreNames.contains('config')) idb.createObjectStore('config', { keyPath: 'key' });
+  // Nuevo store para técnicos
+  if (!idb.objectStoreNames.contains('tecnicos')) idb.createObjectStore('tecnicos', { keyPath: 'id' });
+};
+
+req.onsuccess = (e) => {
+  db = e.target.result;
+  initApp();
+};
+
+req.onerror = (e) => {
+  console.error('Error inicializando IndexedDB', e);
+  showStatus('Error DB', true);
+};
+
+/* --------- Helper DB functions (Promises) --------- */
+function tx(store, mode = 'readonly'){
+  return db.transaction(store, mode).objectStore(store);
+}
+
+function dbSet(store, value){
+  return new Promise((resolve, reject) => {
+    try {
+      const request = tx(store, 'readwrite').put(value);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = (e) => reject(e);
+    } catch (e) { reject(e); }
+  });
+}
+function dbAdd(store, value){
+  return new Promise((resolve, reject) => {
+    try {
+      const request = tx(store, 'readwrite').add(value);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = (e) => reject(e);
+    } catch (e) { reject(e); }
+  });
+}
+function dbGet(store, key){
+  return new Promise((resolve) => {
+    const request = tx(store, 'readonly').get(key);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => resolve(null);
+  });
+}
+function dbGetAll(store){
+  return new Promise((resolve) => {
+    const request = tx(store, 'readonly').getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => resolve([]);
+  });
+}
+function dbDelete(store, key){
+  return new Promise((resolve, reject) => {
+    try {
+      const request = tx(store, 'readwrite').delete(key);
+      request.onsuccess = () => resolve(true);
+      request.onerror = (e) => reject(e);
+    } catch (e) { reject(e); }
+  });
+}
+// NUEVO: Función para eliminar todos los registros de una tienda (útil para actualizar listas maestras)
+function dbDelAll(store){
+  return new Promise((resolve) => {
+    const request = tx(store, 'readwrite').clear();
+    request.onsuccess = () => resolve(true);
+    request.onerror = () => resolve(false);
+  });
+}
+
+/* ------------------ UI helpers ------------------ */
+function showStatus(text, isError=false){
+  const el = document.getElementById('statusTxt');
+  const badge = document.getElementById('badge');
+  const syncBtn = document.getElementById('syncBtn');
+  el.textContent = text;
+  el.style.color = isError ? 'var(--danger)' : 'inherit';
+  if(isError){
+    // Si hay error, solo mostrar texto y ocultar badge/sync
+    badge.style.display='none';
+    syncBtn.style.display='none';
+  }
+}
+
+function notif(msg, type='ok'){
+  // simple accessible notification via statusbar temporarily
+  const el = document.getElementById('statusTxt');
+  el.textContent = msg;
+  el.style.color = type==='err' ? 'var(--danger)' : 'inherit';
+  setTimeout(()=> updateStatus(), 3500);
+}
+
+// Muestra el número compuesto [ID_Técnico][Folio]
+function renderNum(){
+  const numPad = String(appState.folio).padStart(4,'0');
+  const techPad = appState.techId ? String(appState.techId).padStart(2,'0') : 'XX';
+  
+  document.getElementById('num').textContent = `N° ${techPad}${numPad}`; 
+}
+
+/* ------------------ App init ------------------ */
+async function initApp(){
+  
+  // set today's date if empty
+  if(!document.getElementById('fecha').value) document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+
+  // Evento de selección de Técnico
+  document.getElementById('nomTec').addEventListener('change', onTechSelect);
+  document.getElementById('cliNom').addEventListener('change', onClientSelect);
+  document.getElementById('cliNom').addEventListener('input', ()=>{/* allow typing */});
+  document.getElementById('syncBtn').addEventListener('click', sync);
+
+  // Intentar cargar el último técnico y su folio si ya están guardados
+  const lastTech = await dbGet('config', 'lastTech');
+  if (lastTech && lastTech.id) {
+    document.getElementById('nomTec').value = lastTech.name;
+    // Forzamos la ejecución de onTechSelect si ya hay un técnico guardado
+    // Nota: onTechSelect actualizará appState.techId y llamará a loadTechFolio
+    await onTechSelect.call(document.getElementById('nomTec'));
+  }
+  
+  // load data from local DB
+  await loadLists();
+  await loadServices();
+  await renderPendingBadge();
+
+  // try to sync from server to pull masters (incluye lista de técnicos y folios)
+  syncServer();
+
+  // connectivity events
+  // Cuando se vuelve a conectar, llama a updateStatus (que solo actualiza el texto) y luego a sync()
+  window.addEventListener('online', () => { updateStatus(); sync(); });
+  window.addEventListener('offline', updateStatus);
+  updateStatus();
+  
+  // Inicializa el número compuesto (puede ser N° XX0001 si no hay técnico)
+  renderNum();
+}
+
+// Manejador al seleccionar técnico
+async function onTechSelect() {
+  const name = this.value.trim();
+  const techList = await dbGetAll('tecnicos');
+  // Buscar el técnico por nombre para obtener su ID
+  const selectedTech = techList.find(t => t.nombre === name);
+
+  if (selectedTech) {
+    appState.techId = selectedTech.id;
+    appState.techName = selectedTech.nombre;
+    
+    // Guardar el último técnico usado en la configuración
+    await dbSet('config', { key: 'lastTech', id: appState.techId, name: appState.techName });
+    await loadTechFolio(appState.techId);
+  } else {
+    // Si el nombre no coincide, resetear el folio al genérico
+    appState.techId = null;
+    appState.folio = 1;
+    renderNum();
+    if(name) notif('Técnico no reconocido. Sincronice la lista maestra.', 'err');
+  }
+}
+
+// Carga el folio específico de un técnico
+async function loadTechFolio(techId) {
+    if (!techId) return;
+    const key = `folio_${techId}`;
+    const cfg = await dbGet('config', key);
+    // Si no hay configuración para este técnico, empezar en 1 (o el valor guardado)
+    appState.folio = cfg ? (cfg.value || 1) : 1;
+    renderNum();
+}
+
+/* ------------------ Load lists for datalist and services ------------------ */
+async function loadLists(){
+  const clientes = await dbGetAll('clientes');
+  const marcas = await dbGetAll('marcas');
+  const modelos = await dbGetAll('modelos');
+  const reps = await dbGetAll('repuestos');
+  const tecnicos = await dbGetAll('tecnicos'); // NUEVO
+
+  document.getElementById('cli-list').innerHTML = clientes.map(c => `<option value="${escapeHtml(c.nombre)}">`).join('');
+  document.getElementById('marca-list').innerHTML = marcas.map(m => `<option value="${escapeHtml(m.nombre)}">`).join('');
+  document.getElementById('modelo-list').innerHTML = modelos.map(m => `<option value="${escapeHtml(m.nombre)}">`).join('');
+  document.getElementById('rep-list').innerHTML = reps.map(r => `<option value="${escapeHtml(r.nombre)}">`).join('');
+  // Llenar datalist de técnicos
+  document.getElementById('tech-list').innerHTML = tecnicos.map(t => `<option value="${escapeHtml(t.nombre)}">`).join(''); 
+}
+
+async function loadServices(){
+  const servicios = await dbGetAll('servicios');
+  const container = document.getElementById('trabChk');
+  container.innerHTML = '';
+  servicios.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'chk-item';
+    const id = `srv-${s.id || i}`;
+    // Si 's' es un objeto {value: 'Servicio'}, usa s.value. Si es solo un string 'Servicio', usa s.
+    const serviceValue = s.value || s; 
+    d.innerHTML = `<input type="checkbox" id="${id}" value="${serviceValue}" onchange="updateTrab()">
+                   <label for="${id}" style="margin:0;font-weight:500;width:100%">${escapeHtml(serviceValue)}</label>`;
+    container.appendChild(d);
+  });
+  updateTrab();
+}
+
+/* ------------------ Autocomplete client selection ------------------ */
+async function onClientSelect(){
+  const nom = document.getElementById('cliNom').value.trim();
+  if(!nom) return;
+  const c = await dbGet('clientes', nom);
+  if (c){
+    document.getElementById('cliRut').value = c.rut || '';
+    document.getElementById('cliDir').value = c.direccion || '';
+    document.getElementById('cliCiu').value = c.ciudad || '';
+    document.getElementById('cliCon').value = c.contacto || '';
+    document.getElementById('cliMail').value = c.email || '';
+    document.getElementById('cliTel').value = c.telefono || '';
+  }
+}
+
+/* ------------------ Update trabajos resumen ------------------ */
+function updateTrab(){
+  const chk = document.querySelectorAll('#trabChk input:checked');
+  const desc = document.getElementById('trabDesc');
+  if(chk.length === 0){
+    desc.textContent = 'No hay trabajos seleccionados';
+    desc.style.color = 'var(--sub)';
+  } else {
+    desc.textContent = Array.from(chk).map(c => c.value).join(', ');
+    desc.style.color = 'var(--text)';
+  }
+}
+
+/* ------------------ Add / remove repuestos rows ------------------ */
+function addRepInst(){
+  const c = document.getElementById('repInst');
+  const rows = c.querySelectorAll('.rep-row').length;
+  if(rows >= 20){ notif('Máximo 20 repuestos', 'err'); return; }
+  const d = document.createElement('div');
+  d.className = 'rep-row';
+  d.innerHTML = `<div><label>Repuesto</label><input type="text" class="rep-nom" list="rep-list" placeholder="Nombre repuesto"></div>
+                 <div><label>Serie</label><input type="text" class="rep-ser" placeholder="N° Serie"></div>
+                 <div style="align-self:center"><button class="btn-del" onclick="this.closest('.rep-row').remove()">Eliminar</button></div>`;
+  c.appendChild(d);
+}
+function addRepRet(){
+  const c = document.getElementById('repRet');
+  const rows = c.querySelectorAll('.rep-row').length;
+  if(rows >= 20){ notif('Máximo 20 repuestos', 'err'); return; }
+  const d = document.createElement('div');
+  d.className = 'rep-row';
+  d.innerHTML = `<div><label>Repuesto</label><input type="text" class="rep-ret-nom" list="rep-list" placeholder="Nombre repuesto"></div>
+                 <div><label>Serie</label><input type="text" class="rep-ret-ser" placeholder="N° Serie"></div>
+                 <div style="align-self:center"><button class="btn-del" onclick="this.closest('.rep-row').remove()">Eliminar</button></div>`;
+  c.appendChild(d);
+}
+
+/* ------------------ Save / Persist functions ------------------ */
+async function saveClienteIfNew(cliObj){
+  if(!cliObj || !cliObj.nombre) return;
+  const exists = await dbGet('clientes', cliObj.nombre);
+  await dbSet('clientes', Object.assign({}, exists || {}, cliObj));
+  await loadLists();
+}
+async function saveMarcaIfNew(marca){
+  if(!marca) return;
+  const exists = await dbGet('marcas', marca);
+  if(!exists) await dbSet('marcas', { nombre: marca });
+  await loadLists();
+}
+async function saveModeloIfNew(mod){
+  if(!mod) return;
+  const exists = await dbGet('modelos', mod);
+  if(!exists) await dbSet('modelos', { nombre: mod });
+  await loadLists();
+}
+async function saveRepIfNew(r){
+  if(!r) return;
+  const exists = await dbGet('repuestos', r);
+  if(!exists) await dbSet('repuestos', { nombre: r });
+  await loadLists();
+}
+
+/* ------------------ Save order (offline-first) ------------------ */
+async function save(){
+  const saveBtn = document.getElementById('saveBtn');
+  
+  if (isSaving || saveBtn.disabled) return; // Control de concurrencia y visual
+
+  isSaving = true;
+  saveBtn.disabled = true; // Deshabilitar inmediatamente
+
+  try {
+    if (!appState.techId) {
+      notif('Debe seleccionar su Nombre Técnico para generar el folio.', 'err');
+      return;
+    }
+    
+    const cliNom = document.getElementById('cliNom').value.trim();
+    if(!cliNom){ notif('Ingrese el nombre del cliente', 'err'); return; }
+
+    // 1. Construir el folio compuesto
+    const folioActual = String(appState.folio).padStart(4,'0');
+    const techPrefijo = String(appState.techId).padStart(2,'0');
+    const correlativoCompleto = techPrefijo + folioActual; // Ej: 010006
+
+    // Prepare client object & persist if new
+    const cliData = {
+      nombre: cliNom,
+      rut: document.getElementById('cliRut').value.trim(),
+      direccion: document.getElementById('cliDir').value.trim(),
+      ciudad: document.getElementById('cliCiu').value.trim(),
+      contacto: document.getElementById('cliCon').value.trim(),
+      email: document.getElementById('cliMail').value.trim(),
+      telefono: document.getElementById('cliTel').value.trim()
+    };
+    await saveClienteIfNew(cliData);
+
+    // Collect repuestos
+    const repInst = Array.from(document.querySelectorAll('#repInst .rep-row')).map(r => {
+      return {
+        nombre: (r.querySelector('.rep-nom')?.value || '').trim(),
+        serie: (r.querySelector('.rep-ser')?.value || '').trim()
+      };
+    }).filter(x => x.nombre);
+    const repRet = Array.from(document.querySelectorAll('#repRet .rep-row')).map(r => {
+      return {
+        nombre: (r.querySelector('.rep-ret-nom')?.value || '').trim(),
+        serie: (r.querySelector('.rep-ret-ser')?.value || '').trim()
+      };
+    }).filter(x => x.nombre);
+
+    // Trabajos
+    const trab = Array.from(document.querySelectorAll('#trabChk input:checked')).map(cb => cb.value);
+
+    // Equipo
+    const orden = {
+      // Usamos el folio compuesto
+      numero: correlativoCompleto, 
+      fecha: document.getElementById('fecha').value || new Date().toISOString().split('T')[0],
+      cliente: cliData,
+      equipo: {
+        marca: document.getElementById('eqMarca').value.trim(),
+        modelo: document.getElementById('eqMod').value.trim(),
+        serie: document.getElementById('eqSer').value.trim(),
+        condicion: document.getElementById('eqCond').value
+      },
+      contadores: {
+        bn: document.getElementById('contBN').value || '0',
+        color: document.getElementById('contColor').value || '0'
+      },
+      repInst, repRet, trab,
+      obs: document.getElementById('obs').value.trim(),
+      extra: { 
+        tecnico: appState.techName, 
+        clienteFirma: document.getElementById('nomCliFirma').value.trim(),
+        idTecnico: appState.techId, // Guardamos el ID por si se necesita en el backend
+        folioTecnico: appState.folio // Guardamos el folio simple (ej: 6)
+      }
+    };
+
+    // Save reuso: add marca/modelo/repuestos to master lists
+    if(orden.equipo.marca) await saveMarcaIfNew(orden.equipo.marca);
+    if(orden.equipo.modelo) await saveModeloIfNew(orden.equipo.modelo);
+    repInst.forEach(r => { if(r.nombre) saveRepIfNew(r.nombre); });
+    repRet.forEach(r => { if(r.nombre) saveRepIfNew(r.nombre); });
+
+    // Save order to ordenesPend (offline queue)
+    await dbAdd('ordenesPend', orden);
+
+    // Incremento y persistencia del número ESPECÍFICO DEL TÉCNICO
+    appState.folio++;
+    const newFolioKey = `folio_${appState.techId}`;
+    await dbSet('config', { key: newFolioKey, value: appState.folio });
+    
+    // Update UI
+    renderNum();
+
+    notif(`Orden N°${correlativoCompleto} guardada`, 'ok');
+    renderPendingBadge();
+    
+    // Limpiar campos (excepto fecha y técnico)
+    document.querySelectorAll('input:not(#fecha):not(#nomTec):not(#num), textarea, select').forEach(i => {
+      if(i.type === 'select-one') i.value = ''; else i.value = '';
+    });
+    document.querySelectorAll('#repInst .rep-row, #repRet .rep-row').forEach((r, i) => { 
+      if (i > 0) r.remove(); // Deja solo la primera fila vacía
+      r.querySelectorAll('input').forEach(i => i.value = '');
+    });
+    document.querySelectorAll('#trabChk input').forEach(c => c.checked = false);
+    updateTrab();
+
+    // Try sync immediately if online
+    if(navigator.onLine) await sync();
+  
+  } catch (e) {
+    console.error("Error al guardar la orden:", e);
+    notif('Error crítico al guardar. Consulte la consola.', 'err');
+  } finally {
+    isSaving = false;
+    saveBtn.disabled = false; // Re-habilitar el botón
+  }
+}
+
+/* ------------------ Sync logic ------------------ */
+async function renderPendingBadge(){
+  const pend = await dbGetAll('ordenesPend');
+  const badge = document.getElementById('badge');
+  const syncBtn = document.getElementById('syncBtn');
+  if(pend.length > 0){
+    badge.textContent = pend.length;
+    badge.style.display = 'inline-block';
+    syncBtn.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+    syncBtn.style.display = 'none';
+  }
+}
+
+async function sync(){
+  if(isSyncing) return; // Salir si ya hay una sincronización en curso
+  if(!navigator.onLine) { notif('Sin conexión — pendiente', 'err'); return; }
+  const pend = await dbGetAll('ordenesPend');
+  if(pend.length === 0){ notif('No hay órdenes pendientes', 'ok'); return; }
+
+  isSyncing = true; // Establecer bandera
+  showStatus('Sincronizando...');
+  let successes = 0, failures = 0;
+  
+  try { // Usar try/finally para garantizar que la bandera se restablezca
+    for(const o of pend){
+      try {
+        const res = await fetch(URL, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ action: 'saveOrden', data: o })
+        });
+        const json = await res.json();
+        if(json && json.success){
+          await dbDelete('ordenesPend', o.id);
+          successes++;
+        } else {
+          failures++;
+          console.warn('Fallo server', o, json);
+        }
+      } catch (e){
+        failures++;
+        console.warn('Error enviando', e);
+      }
+    }
+  } finally {
+    isSyncing = false; // Restablecer bandera
+  }
+
+  await renderPendingBadge();
+  showStatus('Conectado');
+  if(successes > 0) notif(`Enviadas ${successes} órdenes`, 'ok');
+  if(failures > 0) notif(`${failures} fallidas`, 'err');
+}
+
+/* Pull masters from Google Sheet (loadData) */
+async function syncServer(){
+  if(!navigator.onLine) { showStatus('Offline'); return; }
+  try {
+    showStatus('Actualizando...');
+    // Enviamos el ID del técnico actual al servidor
+    const r = await fetch(`${URL}?action=loadData&techId=${appState.techId || ''}`);
+    const data = await r.json();
+    if(!data.success){ showStatus('Sin datos server'); return; }
+
+    // 1. Cargar y actualizar técnicos
+    if(Array.isArray(data.tecnicos)) { 
+      await dbDelAll('tecnicos'); // Limpiar para evitar duplicados si se actualizan IDs
+      for(const t of data.tecnicos) await dbSet('tecnicos', t); 
+    }
+    
+    // 2. Cargar otras listas
+    if(Array.isArray(data.cli)) {
+      for(const c of data.cli){
+        if(!c || !c.nombre) continue;
+        await dbSet('clientes', c);
+      }
+    }
+    if(Array.isArray(data.marcas)) for(const m of data.marcas) await dbSet('marcas',{nombre:m});
+    if(Array.isArray(data.modelos)) for(const m of data.modelos) await dbSet('modelos',{nombre:m});
+    if(Array.isArray(data.reps)) for(const r of data.reps) await dbSet('repuestos',{nombre:r});
+    if(Array.isArray(data.servs)){
+      await dbDelAll('servicios'); // Limpiar la lista de servicios antes de volver a agregar
+      for(const s of data.servs) await dbAdd('servicios', { value: s });
+    }
+    
+    // 3. Corregir el correlativo específico del técnico actual
+    if(appState.techId && data.lastNumTech){
+        const serverNum = parseInt(data.lastNumTech, 10);
+        const folioKey = `folio_${appState.techId}`;
+        
+        // Si el número del servidor es válido y es mayor o igual al que tengo localmente
+        if(!isNaN(serverNum) && serverNum >= appState.folio){
+           appState.folio = serverNum + 1;
+           await dbSet('config', { key: folioKey, value: appState.folio });
+           renderNum();
+           notif(`Folio de ${appState.techName} actualizado.`, 'ok');
+        }
+    }
+
+    await loadLists();
+    await loadServices();
+    showStatus('Actualizado');
+  } catch (e){
+    console.warn('syncServer error', e);
+    showStatus('Error de conexión', true);
+  }
+}
+
+/* ------------------ Utilities ------------------ */
+function toggle(hdr){ const cnt = hdr.nextElementSibling; if(!cnt) return; cnt.style.display = (cnt.style.display === 'none' || cnt.style.display === '') ? 'block' : 'none'; }
+function escapeHtml(str){ if(!str) return ''; return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
+
+/* ------------------ Status & connectivity ------------------ */
+function updateStatus(){
+  // Solo actualiza el estado. La sincronización se maneja por eventos o por 'save()'
+  if(navigator.onLine){ showStatus('Conectado'); } else { showStatus('Offline', true); }
+}
+
+/* ------------------ Small UX: autosave marca/modelo/repuesto on leave ------------------ */
+document.addEventListener('focusout', async (e) => {
+  const t = e.target;
+  if(t.id === 'eqMarca' && t.value.trim()) await saveMarcaIfNew(t.value.trim());
+  if(t.id === 'eqMod' && t.value.trim()) await saveModeloIfNew(t.value.trim());
+  if(t.classList.contains('rep-nom') && t.value.trim()) await saveRepIfNew(t.value.trim());
+  if(t.classList.contains('rep-ret-nom') && t.value.trim()) await saveRepIfNew(t.value.trim());
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.exp .exp-cnt').forEach(c => c.style.display = 'block');
+});
+</script>
+
+</body>
+</html>
