@@ -219,6 +219,39 @@
     max-width: 90%;
   }
 
+  /* ESTILOS PARA IMÁGENES (NUEVO) */
+  .img-thumb-container {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .img-thumb-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+  }
+  .btn-img-del {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(229, 62, 62, 0.9);
+      color: white;
+      border: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
   /* ---------------- MEDIA QUERIES (Móvil) ---------------- */
   @media (max-width: 768px) {
     body { padding: 10px; padding-bottom: 140px; } /* Más espacio abajo para el menú flotante */
@@ -281,12 +314,17 @@
 
   @media print {
     body, .container { background: #fff; margin: 0; padding: 0; box-shadow: none; width: 100%; max-width: 100%; }
-    .controls, .statusbar, .btn-section-add { display: none !important; }
+    .controls, .statusbar, .btn-section-add, #imgInput, .btn-img-del { display: none !important; }
     .section-title h2 { background: none; border: none; padding-left: 0; color: #000; border-bottom: 2px solid #000; }
     input, textarea, select { border: none; padding: 0; font-family: inherit; font-size: 12px; height: auto; }
     .rep-row { border: none; padding: 0; margin-bottom: 5px; grid-template-columns: 2fr 1fr 0px; }
     .btn-del { display: none; }
     header { border-bottom: 1px solid #000; }
+    
+    /* Imágenes al imprimir */
+    #imgCounter { display: none; }
+    #imgPreview { gap: 5px; }
+    .img-thumb-container { border: none; box-shadow: none; width: 120px; height: auto; }
   }
 </style>
 </head>
@@ -411,6 +449,28 @@
   <section>
     <div class="section-title"><h2>Observaciones</h2></div>
     <textarea id="obs" placeholder="Detalles de la atención..."></textarea>
+  </section>
+
+  <section>
+    <div class="section-title">
+      <h2>Evidencia Fotográfica (máx. 8 imágenes)</h2>
+    </div>
+
+    <input
+      type="file"
+      id="imgInput"
+      accept="image/*"
+      multiple 
+      style="margin-bottom:10px"
+    >
+
+    <div id="imgCounter" style="font-size:13px;color:#64748b;margin-bottom:8px">
+      0 / 8 imágenes
+    </div>
+
+    <div id="imgPreview" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+
+    <canvas id="imgCanvas" style="display:none"></canvas>
   </section>
 
   <div class="footer">
@@ -576,6 +636,9 @@ async function initApp(){
   document.getElementById('cliNom').addEventListener('change', onClientSelect);
   document.getElementById('cliNom').addEventListener('input', ()=>{/* allow typing */});
   document.getElementById('syncBtn').addEventListener('click', sync);
+
+  // --- MODIFICACIÓN: Listener para imágenes ---
+  document.getElementById('imgInput').addEventListener('change', handleImageUpload);
 
   // Intentar cargar el último técnico y su folio si ya están guardados
   const lastTech = await dbGet('config', 'lastTech');
@@ -748,6 +811,108 @@ async function saveRepIfNew(r){
   await loadLists();
 }
 
+/* ======================================================
+   NUEVO MÓDULO: GESTIÓN DE IMÁGENES
+   Compresión en navegador y conversión a Base64
+   ====================================================== */
+let appImages = []; // Almacena los strings Base64
+const MAX_IMGS = 8;
+const MAX_WIDTH = 1280;
+
+async function handleImageUpload(e) {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
+
+  if (appImages.length + files.length > MAX_IMGS) {
+    notif(`Máximo ${MAX_IMGS} imágenes en total`, 'err');
+    e.target.value = ''; // Reset input
+    return;
+  }
+
+  showStatus('Comprimiendo...');
+  
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const b64 = await compressImage(files[i]);
+      if(b64) appImages.push(b64);
+    }
+    renderImages();
+    updateStatus();
+  } catch (error) {
+    console.error(error);
+    notif('Error al procesar imagen', 'err');
+  }
+  
+  e.target.value = ''; // Reset input permite seleccionar más o las mismas
+}
+
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        // Calcular nueva dimensión manteniendo aspect ratio
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+
+        const canvas = document.getElementById('imgCanvas');
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Exportar a JPEG comprimido (calidad 0.65)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
+        resolve(dataUrl);
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+}
+
+function renderImages() {
+  const container = document.getElementById('imgPreview');
+  const counter = document.getElementById('imgCounter');
+  container.innerHTML = '';
+  
+  appImages.forEach((imgBase64, index) => {
+    const div = document.createElement('div');
+    div.className = 'img-thumb-container';
+    
+    // Imagen
+    const img = document.createElement('img');
+    img.src = imgBase64;
+    
+    // Botón eliminar
+    const btn = document.createElement('button');
+    btn.className = 'btn-img-del';
+    btn.innerHTML = '&times;';
+    btn.onclick = () => removeImage(index);
+    
+    div.appendChild(img);
+    div.appendChild(btn);
+    container.appendChild(div);
+  });
+
+  counter.textContent = `${appImages.length} / ${MAX_IMGS} imágenes`;
+}
+
+function removeImage(index) {
+  appImages.splice(index, 1);
+  renderImages();
+}
+/* ====================================================== */
+
 /* ------------------ Save order (offline-first) ------------------ */
 async function save(){
   const saveBtn = document.getElementById('saveBtn');
@@ -818,6 +983,10 @@ async function save(){
       },
       repInst, repRet, trab,
       obs: document.getElementById('obs').value.trim(),
+      
+      // INTEGRACIÓN DE IMÁGENES
+      imagenes: appImages, 
+
       extra: { 
         tecnico: appState.techName, 
         clienteFirma: document.getElementById('nomCliFirma').value.trim(),
@@ -856,6 +1025,10 @@ async function save(){
     });
     document.querySelectorAll('#trabChk input').forEach(c => c.checked = false);
     updateTrab();
+
+    // LIMPIEZA DE IMÁGENES (NUEVO)
+    appImages = [];
+    renderImages();
 
     // Try sync immediately if online
     if(navigator.onLine) await sync();
