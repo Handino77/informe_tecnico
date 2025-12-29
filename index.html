@@ -1,641 +1,222 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
-<title>Orden de Servicio Técnico - Realtech SpA</title>
-<link rel="icon" href="logo_realtech.png" />
+<meta charset="UTF-8">
+<title>Informe Técnico Realtech</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-  /* --------- Diseño base responsive --------- */
-  :root{
-    --blue: #004a99;
-    --blue-dark: #003370;
-    --muted: #f8fafc;
-    --accent: #38a169;
-    --danger: #e53e3e;
-    --card: #ffffff;
-    --text: #1f2937;
-    --sub: #64748b;
-    --border: #e2e8f0;
-    --radius: 10px;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-  
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  
-  body {
-    margin: 0;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: #f1f5f9;
-    color: var(--text);
-    padding: 15px;
-    display: flex;
-    justify-content: center;
-    min-height: 100vh;
-    padding-bottom: 100px;
-  }
-
-  .container {
-    width: 100%;
-    max-width: 980px;
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 25px;
-    position: relative;
-  }
-
-  header {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    border-bottom: 2px solid var(--muted);
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-  .logo img { width: 80px; height: auto; border-radius: 6px; object-fit: contain; }
-  .brand { flex: 1; min-width: 200px; }
-  .brand h1 { margin: 0; font-size: 20px; color: var(--blue); line-height: 1.2; }
-  .brand p { margin: 4px 0 0; font-size: 13px; color: var(--sub); line-height: 1.4; }
-  
-  .meta { 
-    text-align: right; 
-    min-width: 140px; 
-    background: var(--muted);
-    padding: 10px;
-    border-radius: 8px;
-  }
-  .meta .num { font-weight: 800; color: var(--blue); font-size: 18px; margin-bottom: 4px; }
-  .meta .fecha { font-size: 13px; color: var(--sub); display: flex; flex-direction: column; align-items: flex-end; }
-  .meta .fecha input { text-align: right; padding: 4px; border: none; background: transparent; font-weight: 600; color: var(--sub); }
-
-  /* Grid General para otras secciones */
-  .grid, .grid-eq {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
-    align-items: end;
-  }
-
-  /* NUEVO: Grid optimizado para Información del Cliente */
-  .grid-cliente {
-    display: grid;
-    grid-template-columns: 2fr 1fr; 
-    gap: 15px;
-    margin-bottom: 15px;
-    align-items: end;
-  }
-  .grid-cliente > div:nth-child(3) { grid-column: 1 / 2; }
-  .grid-cliente > div:nth-child(4) { grid-column: 2 / 3; }
-  .grid-cliente > div:nth-child(5) { grid-column: 1 / 2; }
-  .grid-cliente > div:nth-child(6) { grid-column: 2 / 3; }
-  .grid-cliente .full-width { grid-column: 1 / -1; }
-
-  label { display: block; font-size: 12px; color: var(--blue); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-  
-  input[type="text"], input[type="date"], input[type="number"], textarea, select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: #fff;
-    font-size: 15px;
-    color: var(--text);
-    outline: none;
-    transition: all 0.2s;
-    height: 42px;
-  }
-  input:focus, textarea:focus, select:focus {
-    border-color: var(--blue);
-    box-shadow: 0 0 0 3px rgba(0, 74, 153, 0.1);
-  }
-  textarea { min-height: 80px; resize: vertical; height: auto; }
-
-  .section-title { margin: 25px 0 10px; }
-  .section-title h2 {
-    margin: 0; font-size: 14px;
-    background: #f0f7ff;
-    padding: 10px 15px;
-    border-radius: 6px;
-    border-left: 5px solid var(--blue);
-    color: var(--blue);
-    text-transform: uppercase;
-  }
-
-  .btn-section-add {
-    background: #fff;
-    border: 1px solid var(--border);
-    color: var(--blue);
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 14px;
-    width: 100%;
-    margin-top: 15px;
-  }
-
-  .exp { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; }
-  
-  .rep-row {
-    display: grid;
-    grid-template-columns: 1fr 140px 40px;
-    gap: 10px;
-    align-items: end;
-    margin-bottom: 12px;
-    background: #fff;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-  }
-  .btn-del {
-    background: #fee2e2; color: var(--danger);
-    border: none; border-radius: 6px;
-    height: 42px; width: 100%;
-    font-weight: bold; cursor: pointer;
-  }
-
-  .footer { margin-top: 30px; border-top: 2px solid var(--muted); padding-top: 20px; }
-  .firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-  .firma-line { margin-top: 5px; border-top: 1px dashed var(--sub); padding-top: 5px; font-size: 11px; text-align: center; color: var(--sub); text-transform: uppercase; }
-
-  .controls {
-    position: fixed;
-    bottom: 20px; right: 20px;
-    display: flex; flex-direction: column; gap: 10px;
-    z-index: 1000;
-  }
-  .controls button {
-    padding: 12px 20px;
-    border-radius: 50px;
-    border: none;
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 14px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    min-width: 160px;
-  }
-  .btn-save { background: var(--accent); color: #fff; }
-  .btn-blue { background: var(--blue); color: #fff; }
-
-  .statusbar {
-    position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
-    background: rgba(255,255,255,0.95);
-    padding: 8px 16px;
-    border-radius: 30px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    z-index: 1100;
-    display: flex; gap: 10px; align-items: center; font-size: 13px;
-    border: 1px solid var(--border);
-  }
-
-  .img-thumb-container { position: relative; width: 100px; height: 100px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
-  .img-thumb-container img { width: 100%; height: 100%; object-fit: cover; }
-  .btn-img-del { position: absolute; top: 4px; right: 4px; background: rgba(229, 62, 62, 0.9); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; }
-
-  @media print {
-    .no-print, .controls, .statusbar, .btn-section-add, #imgInput, .btn-img-del, .btn-del { display: none !important; }
-    body, .container { background: #fff; margin: 0; padding: 0; box-shadow: none; width: 100%; }
-    textarea, input { border: none !important; resize: none; overflow: hidden; }
-  }
-
-  @media (max-width: 768px) {
-    .grid-cliente { grid-template-columns: 1fr; gap: 12px; }
-    .grid-cliente > div { grid-column: 1 / -1 !important; }
-    .controls { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 12px; flex-direction: row; border-top: 1px solid var(--border); }
-    .controls button { flex: 1; min-width: auto; }
-  }
+body { font-family: Arial, sans-serif; padding:20px }
+label { display:block; margin-top:10px }
+input, textarea, button {
+  width:100%; padding:8px; margin-top:4px
+}
+button { margin-top:15px }
+#preview img {
+  max-width:110px;
+  margin:5px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
 </style>
 </head>
+
 <body>
 
-<div class="statusbar" id="statusbar">
-  <strong id="statusTxt">Cargando...</strong>
-  <span id="badge" style="display:none;background:#f97316;color:#fff;padding:2px 6px;border-radius:10px;font-size:11px;">0</span>
-  <button id="syncBtn" style="display:none;padding:4px 8px;border-radius:6px;border:none;background:#eef4ff;color:var(--blue);cursor:pointer;font-weight:bold;font-size:11px;">Sincronizar</button>
-</div>
+<h2>Informe Técnico</h2>
 
-<div class="container">
-  <header>
-    <div class="logo"><img src="logo_realtech.png" alt="Realtech" onerror="this.style.display='none'"></div>
-    <div class="brand">
-      <h1>Realtech SpA — Orden de Servicio Técnico</h1>
-      <p>RUT: 77.651.114-5 — Arturo Prat 780 of 203A, Temuco</p>
-    </div>
-    <div class="meta">
-      <div class="num" id="num">N° XXXX</div> 
-      <div class="fecha">Emisión: <input type="date" id="fecha" /></div>
-    </div>
-  </header>
+<label>N° Orden</label>
+<input id="numero" readonly>
 
-  <section>
-    <div class="section-title"><h2>Información del Cliente</h2></div>
-    <div class="grid-cliente" role="form" aria-label="Información del cliente">
-      
-      <div>
-        <label for="cliNom">Cliente / Empresa</label>
-        <input type="text" id="cliNom" list="cli-list" placeholder="Nombre del cliente..." autocomplete="off">
-      </div>
-      <div>
-        <label for="cliRut">RUT</label>
-        <input type="text" id="cliRut" placeholder="XX.XXX.XXX-X">
-      </div>
+<label>Cliente</label>
+<input id="cliente">
 
-      <div>
-        <label for="cliDir">Dirección</label>
-        <input type="text" id="cliDir" placeholder="Dirección">
-      </div>
-      <div>
-        <label for="cliCiu">Ciudad</label>
-        <input type="text" id="cliCiu" placeholder="Ciudad">
-      </div>
+<label>RUT</label>
+<input id="rut">
 
-      <div>
-        <label for="cliCon">Contacto</label>
-        <input type="text" id="cliCon" placeholder="Atención a...">
-      </div>
-      <div>
-        <label for="cliTel">Teléfono</label>
-        <input type="text" id="cliTel" placeholder="+56 9 ...">
-      </div>
+<label>Modelo</label>
+<input id="modelo">
 
-      <div class="full-width">
-        <label for="cliMail">Email</label>
-        <input type="text" id="cliMail" placeholder="correo@ejemplo.com">
-      </div>
-      
-    </div>
-  </section>
+<label>Serie</label>
+<input id="serie">
 
-  <section>
-    <div class="section-title"><h2>Información del Equipo</h2></div>
-    <div class="grid-eq">
-      <div><label for="eqMarca">Marca</label><input type="text" id="eqMarca" list="marca-list"></div>
-      <div><label for="eqMod">Modelo</label><input type="text" id="eqMod" list="modelo-list"></div>
-      <div><label for="eqSer">Serie</label><input type="text" id="eqSer"></div>
-      <div>
-        <label for="eqCond">Condición</label>
-        <select id="eqCond">
-          <option value="">Seleccionar...</option>
-          <option value="Arriendo">Arriendo</option>
-          <option value="Venta">Venta</option>
-        </select>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-      <div><label for="contBN">Contador B/N</label><input type="number" id="contBN" placeholder="0"></div>
-      <div><label for="contColor">Contador Color</label><input type="number" id="contColor" placeholder="0"></div>
-    </div>
-  </section>
+<label>Trabajo Realizado</label>
+<textarea id="trabajo"></textarea>
 
-  <section>
-    <div class="section-title"><h2>Trabajo Realizado</h2></div>
-    <div class="exp">
-      <div class="no-print" style="margin-bottom: 10px;">
-        <label for="trabSelect">Ayuda: Seleccionar trabajo predefinido</label>
-        <select id="trabSelect">
-          <option value="">-- Seleccionar para agregar --</option>
-        </select>
-      </div>
-      <label for="trabText">Descripción del Trabajo (Libre)</label>
-      <textarea id="trabText" placeholder="Escriba aquí el trabajo realizado..."></textarea>
-    </div>
-  </section>
+<label>Adjuntar Imágenes</label>
+<input type="file" id="imagenes" accept="image/*" multiple>
+<div id="preview"></div>
 
-  <section>
-    <div class="section-title"><h2>Observaciones</h2></div>
-    <textarea id="obs" placeholder="Detalles adicionales..."></textarea>
-  </section>
-
-  <section>
-    <div class="section-title"><h2>Evidencia Fotográfica</h2></div>
-    <input type="file" id="imgInput" accept="image/*" multiple>
-    <div id="imgCounter" style="font-size:13px;color:#64748b;margin-bottom:8px">0 / 8 imágenes</div>
-    <div id="imgPreview" style="display:flex;flex-wrap:wrap;gap:10px"></div>
-    <canvas id="imgCanvas" style="display:none"></canvas>
-  </section>
-
-  <div class="footer">
-    <div class="firmas">
-      <div>
-        <label>Nombre Técnico</label>
-        <input type="text" id="nomTec" list="tech-list">
-        <div class="firma-line">Firma Técnico</div>
-      </div>
-      <div>
-        <label>Nombre Cliente</label>
-        <input type="text" id="nomCliFirma">
-        <div class="firma-line">Firma Cliente</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<datalist id="cli-list"></datalist>
-<datalist id="marca-list"></datalist>
-<datalist id="modelo-list"></datalist>
-<datalist id="tech-list"></datalist>
-
-<div class="controls">
-  <button class="btn-blue" onclick="window.print()">Imprimir</button>
-  <button class="btn-save" id="saveBtn" onclick="save()">GUARDAR</button>
-</div>
+<button onclick="guardarOrden()">Guardar Orden</button>
 
 <script>
-/* LÓGICA DE PROGRAMACIÓN (IndexedDB, Sync, Image Compression, etc.) */
-const URL = 'https://informes-realtech.realtech-spa.workers.dev';
-let db = null;
-let appState = { folio: 1, techId: null, techName: null };
-let appImages = [];
-let isSaving = false;
-let isSyncing = false;
+/* ==========================
+   CONFIG
+========================== */
 
-// Inicialización de DB
-const req = indexedDB.open('RealtechDB', 4);
-req.onsuccess = (e) => { db = e.target.result; initApp(); };
-req.onupgradeneeded = (e) => {
-  const idb = e.target.result;
-  if (!idb.objectStoreNames.contains('clientes')) idb.createObjectStore('clientes', { keyPath: 'nombre' });
-  if (!idb.objectStoreNames.contains('marcas')) idb.createObjectStore('marcas', { keyPath: 'nombre' });
-  if (!idb.objectStoreNames.contains('modelos')) idb.createObjectStore('modelos', { keyPath: 'nombre' });
-  if (!idb.objectStoreNames.contains('servicios')) idb.createObjectStore('servicios', { keyPath: 'id', autoIncrement: true });
-  if (!idb.objectStoreNames.contains('ordenesPend')) idb.createObjectStore('ordenesPend', { keyPath: 'id', autoIncrement: true });
-  if (!idb.objectStoreNames.contains('config')) idb.createObjectStore('config', { keyPath: 'key' });
-  if (!idb.objectStoreNames.contains('tecnicos')) idb.createObjectStore('tecnicos', { keyPath: 'id' });
-};
+const API_URL = "https://informes-realtech.realtech-spa.workers.dev/";
+let folio = 1;
+let db;
+let syncRunning = false;
+let imagenesAdjuntas = [];
 
-async function initApp() {
-  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
-  document.getElementById('nomTec').addEventListener('change', onTechSelect);
-  document.getElementById('cliNom').addEventListener('change', onClientSelect);
-  
-  // Lógica de inserción rápida de trabajo
-  document.getElementById('trabSelect').addEventListener('change', function() {
-    if(!this.value) return;
-    const textArea = document.getElementById('trabText');
-    let current = textArea.value.trim();
-    if(current && !current.endsWith(',')) current += ', ';
-    if(!current.includes(this.value)) textArea.value = current + this.value;
-    this.value = '';
-  });
+/* ==========================
+   INIT
+========================== */
 
-  document.getElementById('imgInput').addEventListener('change', handleImageUpload);
+document.addEventListener("DOMContentLoaded", () => {
+  initDB();
+  loadData();
+});
 
-  await syncServer();
-  await loadLists();
-  await loadServices();
-  await updateBadge();
-  updateStatus();
+/* ==========================
+   LOAD DATA (GET)
+========================== */
 
-  // Enlazar botón de sincronización
-  document.getElementById('syncBtn').addEventListener('click', sync);
-}
-
-// Función para obtener todos los datos del formulario en un objeto consistente
-function buildOrderObject() {
-  return {
-    numero: document.getElementById('num').textContent,
-    fecha: document.getElementById('fecha').value,
-    cliente: {
-      nombre: document.getElementById('cliNom').value.trim(),
-      rut: document.getElementById('cliRut').value,
-      direccion: document.getElementById('cliDir').value,
-      ciudad: document.getElementById('cliCiu').value,
-      contacto: document.getElementById('cliCon').value,
-      telefono: document.getElementById('cliTel').value,
-      email: document.getElementById('cliMail').value
-    },
-    equipo: {
-      marca: document.getElementById('eqMarca').value,
-      modelo: document.getElementById('eqMod').value,
-      serie: document.getElementById('eqSer').value,
-      condicion: document.getElementById('eqCond').value
-    },
-    contadores: {
-      bn: parseInt(document.getElementById('contBN').value) || 0,
-      color: parseInt(document.getElementById('contColor').value) || 0
-    },
-    trabajo: document.getElementById('trabText').value,
-    observaciones: document.getElementById('obs').value,
-    imagenes: appImages,
-    firmas: {
-      tecnico: document.getElementById('nomTec').value,
-      cliente: document.getElementById('nomCliFirma').value
-    },
-    extra: {
-      tecnicoId: appState.techId,
-      tecnicoNombre: appState.techName
-    }
-  };
-}
-
-async function onClientSelect() {
-  const nom = this.value.trim();
-  const request = db.transaction('clientes').objectStore('clientes').get(nom);
-  request.onsuccess = () => {
-    const c = request.result;
-    if (c) {
-      document.getElementById('cliRut').value = c.rut || '';
-      document.getElementById('cliDir').value = c.direccion || '';
-      document.getElementById('cliCiu').value = c.ciudad || '';
-      document.getElementById('cliCon').value = c.contacto || '';
-      document.getElementById('cliMail').value = c.email || '';
-      document.getElementById('cliTel').value = c.telefono || '';
-    }
-  };
-}
-
-async function onTechSelect() {
-  const name = this.value.trim();
-  const tx = db.transaction('tecnicos', 'readonly').objectStore('tecnicos');
-  tx.getAll().onsuccess = (e) => {
-    const tech = e.target.result.find(t => t.nombre === name);
-    if(tech) {
-      appState.techId = tech.id;
-      appState.techName = tech.nombre;
-      renderNum();
-    }
-  };
-}
-
-function renderNum() {
-  const n = String(appState.folio).padStart(4, '0');
-  const t = appState.techId ? String(appState.techId).padStart(2, '0') : 'XX';
-  document.getElementById('num').textContent = `N° ${t}${n}`;
-}
-
-async function loadLists() {
-  const stores = ['clientes', 'marcas', 'modelos', 'tecnicos'];
-  stores.forEach(s => {
-    db.transaction(s).objectStore(s).getAll().onsuccess = (e) => {
-      const list = document.getElementById(s === 'clientes' ? 'cli-list' : (s === 'tecnicos' ? 'tech-list' : s.slice(0,-1) + '-list'));
-      if(list) list.innerHTML = e.target.result.map(i => `<option value="${i.nombre || i.value}">`).join('');
-    };
-  });
-}
-
-async function loadServices() {
-  db.transaction('servicios').objectStore('servicios').getAll().onsuccess = (e) => {
-    const sel = document.getElementById('trabSelect');
-    sel.innerHTML = '<option value="">-- Seleccionar --</option>' + e.target.result.map(s => `<option value="${s.value}">${s.value}</option>`).join('');
-  };
-}
-
-function updateStatus() {
-  const st = document.getElementById('statusTxt');
-  st.textContent = navigator.onLine ? 'Conectado' : 'Offline';
-  st.style.color = navigator.onLine ? 'inherit' : 'var(--danger)';
-  document.getElementById('syncBtn').style.display = navigator.onLine ? 'inline-block' : 'none';
-}
-
-async function syncServer() {
-  if(!navigator.onLine) return;
-  try {
-    const r = await fetch(`${URL}?action=loadData`);
-    const d = await r.json();
-    if(d.success) {
-      const tx = db.transaction(['clientes', 'tecnicos', 'servicios', 'marcas', 'modelos'], 'readwrite');
-      d.cli.forEach(c => tx.objectStore('clientes').put(c));
-      d.tecnicos.forEach(t => tx.objectStore('tecnicos').put(t));
-      tx.objectStore('servicios').clear();
-      d.servs.forEach(s => tx.objectStore('servicios').add({value: s}));
-    }
-  } catch(e) { console.error(e); }
-}
-
-async function save() {
-  if (isSaving) return;
-  const cliNom = document.getElementById('cliNom').value.trim();
-  if (!cliNom || !appState.techId) {
-    alert('Faltan datos críticos (Cliente o Técnico)');
-    return;
-  }
-
-  isSaving = true;
-  const orden = buildOrderObject();
-  const tx = db.transaction('ordenesPend', 'readwrite');
-  tx.objectStore('ordenesPend').add(orden).onsuccess = async () => {
-    alert('Orden guardada localmente');
-    appState.folio++;
-    renderNum();
-    await updateBadge();
-    if (navigator.onLine) sync();
-    isSaving = false;
-  };
-}
-
-async function sync() {
-  if (isSyncing || !navigator.onLine) return;
-  isSyncing = true;
-  try {
-    const pending = await new Promise((resolve) => {
-      const tx = db.transaction('ordenesPend', 'readonly');
-      tx.objectStore('ordenesPend').getAll().onsuccess = (e) => resolve(e.target.result);
+function loadData() {
+  fetch(API_URL + "?action=loadData")
+    .then(r => r.json())
+    .then(d => {
+      if (d.lastNumTech) folio = d.lastNumTech + 1;
+      renderFolio();
     });
-    for (const order of pending) {
-      try {
-        const response = await fetch(URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(order)
-        });
-        if (response.ok) {
-          await new Promise((resolve, reject) => {
-            const tx = db.transaction('ordenesPend', 'readwrite');
-            tx.objectStore('ordenesPend').delete(order.id).onsuccess = resolve;
-            tx.onerror = reject;
-          });
-        }
-      } catch (error) {
-        console.error('Error syncing order:', error);
-      }
-    }
-    await updateBadge();
-  } catch (error) {
-    console.error('Sync error:', error);
-  } finally {
-    isSyncing = false;
-  }
 }
 
-// Función para actualizar el badge de pendientes
-async function updateBadge() {
-  const count = await new Promise(resolve => {
-    db.transaction('ordenesPend').objectStore('ordenesPend').count().onsuccess = e => resolve(e.target.result);
+function renderFolio() {
+  document.getElementById("numero").value =
+    "OT-" + String(folio).padStart(4, "0");
+}
+
+/* ==========================
+   INDEXED DB
+========================== */
+
+function initDB() {
+  const req = indexedDB.open("realtechDB", 1);
+
+  req.onupgradeneeded = e => {
+    db = e.target.result;
+    if (!db.objectStoreNames.contains("pendientes")) {
+      db.createObjectStore("pendientes", { autoIncrement:true });
+    }
+  };
+
+  req.onsuccess = e => db = e.target.result;
+}
+
+/* ==========================
+   IMAGE HANDLING + COMPRESS
+========================== */
+
+document.getElementById("imagenes").addEventListener("change", e => {
+  imagenesAdjuntas = [];
+  document.getElementById("preview").innerHTML = "";
+
+  Array.from(e.target.files).forEach(file => {
+    compressImage(file, 1000, 0.7).then(base64 => {
+      imagenesAdjuntas.push(base64);
+
+      const img = document.createElement("img");
+      img.src = base64;
+      document.getElementById("preview").appendChild(img);
+    });
   });
-  const badge = document.getElementById('badge');
-  badge.textContent = count;
-  badge.style.display = count > 0 ? 'inline-block' : 'none';
-}
+});
 
-// Funciones para manejo de imágenes
-function handleImageUpload(event) {
-  const files = event.target.files;
-  let alertShown = false;
-  for (let i = 0; i < files.length; i++) {
-    if (appImages.length >= 8) {
-      if (!alertShown) {
-        alert('Máximo 8 imágenes permitidas.');
-        alertShown = true;
-      }
-      continue;
-    }
-    processImage(files[i]);
-  }
-  event.target.value = '';
-}
-
-function processImage(file) {
-  const reader = new FileReader();
-  reader.onload = function(e) {
+function compressImage(file, maxSize, quality) {
+  return new Promise(resolve => {
     const img = new Image();
-    img.onload = function() {
-      const canvas = document.getElementById('imgCanvas');
-      let width = img.width;
-      let height = img.height;
-      if (width > 1280) {
-        height = Math.round(height * (1280 / width));
-        width = 1280;
+    const reader = new FileReader();
+
+    reader.onload = e => img.src = e.target.result;
+    reader.readAsDataURL(file);
+
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxSize) {
+        height *= maxSize / width;
+        width = maxSize;
       }
+
+      const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      const base64 = canvas.toDataURL('image/jpeg', 0.65);
-      appImages.push(base64);
-      renderPreviews();
+
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
     };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function renderPreviews() {
-  const previewDiv = document.getElementById('imgPreview');
-  previewDiv.innerHTML = '';
-  appImages.forEach((base64, index) => {
-    const container = document.createElement('div');
-    container.className = 'img-thumb-container';
-    const imgElem = document.createElement('img');
-    imgElem.src = base64;
-    container.appendChild(imgElem);
-    const delBtn = document.createElement('button');
-    delBtn.className = 'btn-img-del';
-    delBtn.textContent = 'X';
-    delBtn.onclick = () => deleteImage(index);
-    container.appendChild(delBtn);
-    previewDiv.appendChild(container);
   });
-  document.getElementById('imgCounter').textContent = `${appImages.length} / 8 imágenes`;
 }
 
-function deleteImage(index) {
-  appImages.splice(index, 1);
-  renderPreviews();
+/* ==========================
+   SAVE ORDER
+========================== */
+
+function guardarOrden() {
+  const orden = {
+    numero: document.getElementById("numero").value,
+    fecha: new Date().toISOString().split("T")[0],
+    cliente: {
+      nombre: cliente.value,
+      rut: rut.value
+    },
+    equipo: {
+      modelo: modelo.value,
+      serie: serie.value
+    },
+    trab: trabajo.value,
+    imagenes: imagenesAdjuntas
+  };
+
+  const tx = db.transaction("pendientes", "readwrite");
+  tx.objectStore("pendientes").add(orden);
+
+  tx.oncomplete = () => {
+    alert("Orden guardada");
+    folio++;
+    renderFolio();
+    limpiarFormulario();
+    if (navigator.onLine) sync();
+  };
 }
 
+function limpiarFormulario() {
+  cliente.value = rut.value = modelo.value = serie.value = trabajo.value = "";
+  imagenesAdjuntas = [];
+  preview.innerHTML = "";
+  imagenes.value = "";
+}
+
+/* ==========================
+   SYNC (POST)
+========================== */
+
+function sync() {
+  if (!navigator.onLine || syncRunning) return;
+  syncRunning = true;
+
+  const tx = db.transaction("pendientes", "readwrite");
+  const store = tx.objectStore("pendientes");
+  store.openCursor().onsuccess = e => {
+    const cursor = e.target.result;
+    if (!cursor) { syncRunning = false; return; }
+
+    fetch(API_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(cursor.value)
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) cursor.delete();
+      cursor.continue();
+    })
+    .catch(() => syncRunning = false);
+  };
+}
+
+window.addEventListener("online", sync);
 </script>
+
 </body>
 </html>
