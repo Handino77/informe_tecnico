@@ -385,6 +385,9 @@ async function initApp() {
   await loadLists();
   await loadServices();
   updateStatus();
+
+  // Nueva sección: Inicialización para manejo de imágenes
+  document.getElementById('imgInput').addEventListener('change', handleImageUpload);
 }
 
 async function onClientSelect() {
@@ -492,6 +495,72 @@ async function save() {
 
 async function sync() {
     // Lógica simplificada de envío al Worker
+}
+
+// Nueva sección: Funciones para manejo de imágenes
+function handleImageUpload(event) {
+  const files = event.target.files;
+  let alertShown = false;
+  for (let i = 0; i < files.length; i++) {
+    if (appImages.length >= 8) {
+      if (!alertShown) {
+        alert('Máximo 8 imágenes permitidas.');
+        alertShown = true;
+      }
+      continue;
+    }
+    processImage(files[i]);
+  }
+  event.target.value = '';
+}
+
+function processImage(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.getElementById('imgCanvas');
+      let width = img.width;
+      let height = img.height;
+      if (width > 1280) {
+        height = Math.round(height * (1280 / width));
+        width = 1280;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      const base64 = canvas.toDataURL('image/jpeg', 0.65);
+      appImages.push(base64);
+      renderPreviews();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderPreviews() {
+  const previewDiv = document.getElementById('imgPreview');
+  previewDiv.innerHTML = '';
+  appImages.forEach((base64, index) => {
+    const container = document.createElement('div');
+    container.className = 'img-thumb-container';
+    const imgElem = document.createElement('img');
+    imgElem.src = base64;
+    container.appendChild(imgElem);
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-img-del';
+    delBtn.textContent = 'X';
+    delBtn.onclick = () => deleteImage(index);
+    container.appendChild(delBtn);
+    previewDiv.appendChild(container);
+  });
+  document.getElementById('imgCounter').textContent = `${appImages.length} / 8 imágenes`;
+}
+
+function deleteImage(index) {
+  appImages.splice(index, 1);
+  renderPreviews();
 }
 
 </script>
