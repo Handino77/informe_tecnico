@@ -72,16 +72,14 @@
   .meta .fecha { font-size: 13px; color: var(--sub); display: flex; flex-direction: column; align-items: flex-end; }
   .meta .fecha input { text-align: right; padding: 4px; border: none; background: transparent; font-weight: 600; color: var(--sub); }
 
-  /* Grids Responsivos (La clave del arreglo) */
+  /* Grids Responsivos */
   .grid, .grid-eq {
     display: grid;
-    /* Esto hace que las columnas se adapten automáticamente */
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
     margin-bottom: 15px;
     align-items: end;
   }
-  /* Excepciones para campos que deben ocupar todo el ancho si es necesario */
   .full-width { grid-column: 1 / -1; }
 
   label { display: block; font-size: 12px; color: var(--blue); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -93,11 +91,11 @@
     border: 1px solid var(--border);
     border-radius: 8px;
     background: #fff;
-    font-size: 15px; /* Evita zoom en iOS */
+    font-size: 15px; 
     color: var(--text);
     outline: none;
     transition: all 0.2s;
-    height: 42px; /* Altura mínima táctil */
+    height: 42px; 
   }
   input:focus, textarea:focus, select:focus {
     border-color: var(--blue);
@@ -117,7 +115,6 @@
     text-transform: uppercase;
   }
 
-  /* Botón para añadir repuestos dentro de la sección */
   .btn-section-add {
     background: #fff;
     border: 1px solid var(--border);
@@ -137,7 +134,6 @@
   .exp { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; }
   .exp-hdr { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
   
-  /* Filas de repuestos responsive */
   .rep-row {
     display: grid;
     grid-template-columns: 1fr 140px 40px;
@@ -157,21 +153,6 @@
     display: flex; align-items: center; justify-content: center;
   }
 
-  /* Checkboxes */
-  .chk-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 10px;
-  }
-  .chk-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px; background: #fff;
-    border-radius: 8px; border: 1px solid var(--border);
-    cursor: pointer;
-  }
-  .chk-item input { width: 18px; height: 18px; margin: 0; }
-  .trab-desc { margin-top: 10px; padding: 12px; background: #fff; border: 1px solid var(--border); border-radius: 8px; color: var(--sub); font-size: 14px; line-height: 1.5; }
-
   /* Footer y Firmas */
   .footer { margin-top: 30px; border-top: 2px solid var(--muted); padding-top: 20px; }
   .firmas {
@@ -181,7 +162,7 @@
   }
   .firma-line { margin-top: 5px; border-top: 1px dashed var(--sub); padding-top: 5px; font-size: 11px; text-align: center; color: var(--sub); text-transform: uppercase; }
 
-  /* Controles Flotantes (Botones) */
+  /* Controles Flotantes */
   .controls {
     position: fixed;
     bottom: 20px; right: 20px;
@@ -219,7 +200,7 @@
     max-width: 90%;
   }
 
-  /* ESTILOS PARA IMÁGENES (NUEVO) */
+  /* IMÁGENES */
   .img-thumb-container {
       position: relative;
       width: 100px;
@@ -229,99 +210,55 @@
       border: 1px solid var(--border);
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
-  .img-thumb-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-  }
+  .img-thumb-container img { width: 100%; height: 100%; object-fit: cover; }
   .btn-img-del {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      background: rgba(229, 62, 62, 0.9);
-      color: white;
-      border: none;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: absolute; top: 4px; right: 4px;
+      background: rgba(229, 62, 62, 0.9); color: white;
+      border: none; width: 22px; height: 22px;
+      border-radius: 50%; cursor: pointer;
+      font-weight: bold; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
   }
 
   /* ---------------- MEDIA QUERIES (Móvil) ---------------- */
   @media (max-width: 768px) {
-    body { padding: 10px; padding-bottom: 140px; } /* Más espacio abajo para el menú flotante */
+    body { padding: 10px; padding-bottom: 140px; }
     .container { padding: 15px; border-radius: 0; box-shadow: none; max-width: 100%; }
     
-    /* Header Stackeado */
     header { flex-direction: column; text-align: center; gap: 10px; }
     .brand { width: 100%; }
     .meta { width: 100%; display: flex; justify-content: space-between; align-items: center; text-align: left; }
     .meta .fecha { align-items: flex-start; }
 
-    /* Inputs en una sola columna visualmente si es muy angosto */
     .grid, .grid-eq { grid-template-columns: 1fr; gap: 12px; }
-    
-    /* Repuestos Stackeado */
-    .rep-row {
-      grid-template-columns: 1fr;
-      gap: 8px;
-    }
-    .rep-row div:last-child { margin-top: 5px; } /* Botón eliminar */
+    .rep-row { grid-template-columns: 1fr; gap: 8px; }
+    .rep-row div:last-child { margin-top: 5px; }
 
-    /* Firmas Stackeadas */
     .firmas { grid-template-columns: 1fr; gap: 20px; }
 
-    /* Controles: Barra inferior fija tipo App */
     .controls {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: #fff;
-      padding: 12px;
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: space-between;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; padding: 12px;
+      flex-direction: row; flex-wrap: wrap; justify-content: space-between;
       border-top: 1px solid var(--border);
       box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
       border-radius: 0;
     }
-    .controls button {
-      flex: 1;
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 13px;
-      min-width: auto;
-      box-shadow: none;
-    }
-    .controls .btn-save { 
-        flex: 2; 
-        margin-left: 5px; 
-        order: 2; 
-        border: none; 
-    }
-    .controls .btn-blue { 
-        flex: 1; 
-        font-size: 13px;
-        padding: 12px;
-        order: 1;
-        display: block; 
-    }
+    .controls button { flex: 1; border-radius: 8px; padding: 12px; font-size: 13px; min-width: auto; box-shadow: none; }
+    .controls .btn-save { flex: 2; margin-left: 5px; order: 2; border: none; }
+    .controls .btn-blue { flex: 1; font-size: 13px; padding: 12px; order: 1; display: block; }
   }
 
   @media print {
     body, .container { background: #fff; margin: 0; padding: 0; box-shadow: none; width: 100%; max-width: 100%; }
-    .controls, .statusbar, .btn-section-add, #imgInput, .btn-img-del { display: none !important; }
+    /* MODIFICACIÓN: Agregado #trabHelper a la lista de ocultos */
+    .controls, .statusbar, .btn-section-add, #imgInput, .btn-img-del, #trabHelper { display: none !important; }
     .section-title h2 { background: none; border: none; padding-left: 0; color: #000; border-bottom: 2px solid #000; }
     input, textarea, select { border: none; padding: 0; font-family: inherit; font-size: 12px; height: auto; }
     .rep-row { border: none; padding: 0; margin-bottom: 5px; grid-template-columns: 2fr 1fr 0px; }
     .btn-del { display: none; }
     header { border-bottom: 1px solid #000; }
     
-    /* Imágenes al imprimir */
     #imgCounter { display: none; }
     #imgPreview { gap: 5px; }
     .img-thumb-container { border: none; box-shadow: none; width: 120px; height: auto; }
@@ -438,12 +375,10 @@
 
   <section>
     <div class="section-title"><h2>Trabajo Realizado</h2></div>
-    <div class="exp">
-      <div class="exp-cnt">
-        <div class="chk-grid" id="trabChk" aria-live="polite"></div>
-        <div class="trab-desc" id="trabDesc">No hay trabajos seleccionados</div>
-      </div>
-    </div>
+    <select id="trabHelper" onchange="addTrabFromSelect(this)" style="width:100%; margin-bottom:10px; border-color:var(--border); color:var(--blue); font-weight:600; cursor:pointer;">
+       <option value="">+ Seleccionar trabajo rápido...</option>
+    </select>
+    <textarea id="trabRealizado" placeholder="Describa el trabajo realizado aquí..."></textarea>
   </section>
 
   <section>
@@ -509,12 +444,12 @@ let isSaving = false;
 /* ------------------ IndexedDB Setup ------------------ */
 let db = null;
 let appState = {
-  folio: 1, // Folio simple para el técnico actual (ej: 6)
-  techId: null, // ID del técnico (ej: 1)
-  techName: null // Nombre del técnico
+  folio: 1, 
+  techId: null, 
+  techName: null 
 };
 
-// CLAVE: Se incrementa la versión a 4 para forzar la creación del store 'tecnicos'
+// Se incrementa la versión para forzar stores si fuera necesario (mantenido original v4)
 const req = indexedDB.open('RealtechDB', 4);
 
 req.onupgradeneeded = (e) => {
@@ -526,7 +461,6 @@ req.onupgradeneeded = (e) => {
   if (!idb.objectStoreNames.contains('servicios')) idb.createObjectStore('servicios', { keyPath: 'id', autoIncrement: true });
   if (!idb.objectStoreNames.contains('ordenesPend')) idb.createObjectStore('ordenesPend', { keyPath: 'id', autoIncrement: true });
   if (!idb.objectStoreNames.contains('config')) idb.createObjectStore('config', { keyPath: 'key' });
-  // Nuevo store para técnicos
   if (!idb.objectStoreNames.contains('tecnicos')) idb.createObjectStore('tecnicos', { keyPath: 'id' });
 };
 
@@ -586,7 +520,6 @@ function dbDelete(store, key){
     } catch (e) { reject(e); }
   });
 }
-// NUEVO: Función para eliminar todos los registros de una tienda (útil para actualizar listas maestras)
 function dbDelAll(store){
   return new Promise((resolve) => {
     const request = tx(store, 'readwrite').clear();
@@ -603,86 +536,65 @@ function showStatus(text, isError=false){
   el.textContent = text;
   el.style.color = isError ? 'var(--danger)' : 'inherit';
   if(isError){
-    // Si hay error, solo mostrar texto y ocultar badge/sync
     badge.style.display='none';
     syncBtn.style.display='none';
   }
 }
 
 function notif(msg, type='ok'){
-  // simple accessible notification via statusbar temporarily
   const el = document.getElementById('statusTxt');
   el.textContent = msg;
   el.style.color = type==='err' ? 'var(--danger)' : 'inherit';
   setTimeout(()=> updateStatus(), 3500);
 }
 
-// Muestra el número compuesto [ID_Técnico][Folio]
 function renderNum(){
   const numPad = String(appState.folio).padStart(4,'0');
   const techPad = appState.techId ? String(appState.techId).padStart(2,'0') : 'XX';
-  
   document.getElementById('num').textContent = `N° ${techPad}${numPad}`; 
 }
 
 /* ------------------ App init ------------------ */
 async function initApp(){
   
-  // set today's date if empty
   if(!document.getElementById('fecha').value) document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
 
-  // Evento de selección de Técnico
   document.getElementById('nomTec').addEventListener('change', onTechSelect);
   document.getElementById('cliNom').addEventListener('change', onClientSelect);
-  document.getElementById('cliNom').addEventListener('input', ()=>{/* allow typing */});
+  document.getElementById('cliNom').addEventListener('input', ()=>{});
   document.getElementById('syncBtn').addEventListener('click', sync);
-
-  // --- MODIFICACIÓN: Listener para imágenes ---
   document.getElementById('imgInput').addEventListener('change', handleImageUpload);
 
-  // Intentar cargar el último técnico y su folio si ya están guardados
   const lastTech = await dbGet('config', 'lastTech');
   if (lastTech && lastTech.id) {
     document.getElementById('nomTec').value = lastTech.name;
-    // Forzamos la ejecución de onTechSelect si ya hay un técnico guardado
-    // Nota: onTechSelect actualizará appState.techId y llamará a loadTechFolio
     await onTechSelect.call(document.getElementById('nomTec'));
   }
   
-  // load data from local DB
   await loadLists();
   await loadServices();
   await renderPendingBadge();
 
-  // try to sync from server to pull masters (incluye lista de técnicos y folios)
   syncServer();
 
-  // connectivity events
-  // Cuando se vuelve a conectar, llama a updateStatus (que solo actualiza el texto) y luego a sync()
   window.addEventListener('online', () => { updateStatus(); sync(); });
   window.addEventListener('offline', updateStatus);
   updateStatus();
   
-  // Inicializa el número compuesto (puede ser N° XX0001 si no hay técnico)
   renderNum();
 }
 
-// Manejador al seleccionar técnico
 async function onTechSelect() {
   const name = this.value.trim();
   const techList = await dbGetAll('tecnicos');
-  // Buscar el técnico por nombre para obtener su ID
   const selectedTech = techList.find(t => t.nombre === name);
 
   if (selectedTech) {
     appState.techId = selectedTech.id;
     appState.techName = selectedTech.nombre;
-    
-    // Guardar el último técnico usado en la configuración
     await dbSet('config', { key: 'lastTech', id: appState.techId, name: appState.techName });
     await loadTechFolio(appState.techId);
   } else {
-    // Si el nombre no coincide, resetear el folio al genérico
     appState.techId = null;
     appState.folio = 1;
     renderNum();
@@ -690,50 +602,71 @@ async function onTechSelect() {
   }
 }
 
-// Carga el folio específico de un técnico
 async function loadTechFolio(techId) {
     if (!techId) return;
     const key = `folio_${techId}`;
     const cfg = await dbGet('config', key);
-    // Si no hay configuración para este técnico, empezar en 1 (o el valor guardado)
     appState.folio = cfg ? (cfg.value || 1) : 1;
     renderNum();
 }
 
-/* ------------------ Load lists for datalist and services ------------------ */
+/* ------------------ Load lists ------------------ */
 async function loadLists(){
   const clientes = await dbGetAll('clientes');
   const marcas = await dbGetAll('marcas');
   const modelos = await dbGetAll('modelos');
   const reps = await dbGetAll('repuestos');
-  const tecnicos = await dbGetAll('tecnicos'); // NUEVO
+  const tecnicos = await dbGetAll('tecnicos'); 
 
   document.getElementById('cli-list').innerHTML = clientes.map(c => `<option value="${escapeHtml(c.nombre)}">`).join('');
   document.getElementById('marca-list').innerHTML = marcas.map(m => `<option value="${escapeHtml(m.nombre)}">`).join('');
   document.getElementById('modelo-list').innerHTML = modelos.map(m => `<option value="${escapeHtml(m.nombre)}">`).join('');
   document.getElementById('rep-list').innerHTML = reps.map(r => `<option value="${escapeHtml(r.nombre)}">`).join('');
-  // Llenar datalist de técnicos
   document.getElementById('tech-list').innerHTML = tecnicos.map(t => `<option value="${escapeHtml(t.nombre)}">`).join(''); 
 }
 
+/* MODIFICACIÓN: Nueva lógica para llenar el Select de ayuda en vez de checkboxes */
 async function loadServices(){
   const servicios = await dbGetAll('servicios');
-  const container = document.getElementById('trabChk');
-  container.innerHTML = '';
-  servicios.forEach((s, i) => {
-    const d = document.createElement('div');
-    d.className = 'chk-item';
-    const id = `srv-${s.id || i}`;
-    // Si 's' es un objeto {value: 'Servicio'}, usa s.value. Si es solo un string 'Servicio', usa s.
-    const serviceValue = s.value || s; 
-    d.innerHTML = `<input type="checkbox" id="${id}" value="${serviceValue}" onchange="updateTrab()">
-                   <label for="${id}" style="margin:0;font-weight:500;width:100%">${escapeHtml(serviceValue)}</label>`;
-    container.appendChild(d);
+  const sel = document.getElementById('trabHelper');
+  
+  // Limpiar opciones manteniendo la primera (placeholder)
+  sel.innerHTML = '<option value="">+ Seleccionar trabajo rápido...</option>';
+  
+  servicios.forEach(s => {
+    // Manejar objeto o string
+    const val = s.value || s; 
+    if(val) {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        sel.appendChild(opt);
+    }
   });
-  updateTrab();
 }
 
-/* ------------------ Autocomplete client selection ------------------ */
+/* MODIFICACIÓN: Función para agregar texto del select al textarea sin duplicar */
+function addTrabFromSelect(selectElement) {
+    const valor = selectElement.value;
+    if(!valor) return;
+    
+    const txtArea = document.getElementById('trabRealizado');
+    // Separamos el contenido actual por comas para chequear si ya existe
+    let partes = txtArea.value.split(',').map(s => s.trim()).filter(s => s);
+    
+    // Verificamos existencia (case insensitive)
+    const existe = partes.some(p => p.toLowerCase() === valor.toLowerCase());
+    
+    if(!existe) {
+        partes.push(valor);
+        // Unimos con coma y espacio
+        txtArea.value = partes.join(', ');
+    }
+    
+    // Resetear el select
+    selectElement.value = "";
+}
+
 async function onClientSelect(){
   const nom = document.getElementById('cliNom').value.trim();
   if(!nom) return;
@@ -745,19 +678,6 @@ async function onClientSelect(){
     document.getElementById('cliCon').value = c.contacto || '';
     document.getElementById('cliMail').value = c.email || '';
     document.getElementById('cliTel').value = c.telefono || '';
-  }
-}
-
-/* ------------------ Update trabajos resumen ------------------ */
-function updateTrab(){
-  const chk = document.querySelectorAll('#trabChk input:checked');
-  const desc = document.getElementById('trabDesc');
-  if(chk.length === 0){
-    desc.textContent = 'No hay trabajos seleccionados';
-    desc.style.color = 'var(--sub)';
-  } else {
-    desc.textContent = Array.from(chk).map(c => c.value).join(', ');
-    desc.style.color = 'var(--text)';
   }
 }
 
@@ -812,10 +732,9 @@ async function saveRepIfNew(r){
 }
 
 /* ======================================================
-   NUEVO MÓDULO: GESTIÓN DE IMÁGENES
-   Compresión en navegador y conversión a Base64
+   GESTIÓN DE IMÁGENES
    ====================================================== */
-let appImages = []; // Almacena los strings Base64
+let appImages = []; 
 const MAX_IMGS = 8;
 const MAX_WIDTH = 1280;
 
@@ -825,7 +744,7 @@ async function handleImageUpload(e) {
 
   if (appImages.length + files.length > MAX_IMGS) {
     notif(`Máximo ${MAX_IMGS} imágenes en total`, 'err');
-    e.target.value = ''; // Reset input
+    e.target.value = ''; 
     return;
   }
 
@@ -842,8 +761,7 @@ async function handleImageUpload(e) {
     console.error(error);
     notif('Error al procesar imagen', 'err');
   }
-  
-  e.target.value = ''; // Reset input permite seleccionar más o las mismas
+  e.target.value = ''; 
 }
 
 function compressImage(file) {
@@ -856,21 +774,15 @@ function compressImage(file) {
       img.onload = () => {
         let width = img.width;
         let height = img.height;
-
-        // Calcular nueva dimensión manteniendo aspect ratio
         if (width > MAX_WIDTH) {
           height *= MAX_WIDTH / width;
           width = MAX_WIDTH;
         }
-
         const canvas = document.getElementById('imgCanvas');
         canvas.width = width;
         canvas.height = height;
-        
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-        
-        // Exportar a JPEG comprimido (calidad 0.65)
         const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
         resolve(dataUrl);
       };
@@ -884,26 +796,19 @@ function renderImages() {
   const container = document.getElementById('imgPreview');
   const counter = document.getElementById('imgCounter');
   container.innerHTML = '';
-  
   appImages.forEach((imgBase64, index) => {
     const div = document.createElement('div');
     div.className = 'img-thumb-container';
-    
-    // Imagen
     const img = document.createElement('img');
     img.src = imgBase64;
-    
-    // Botón eliminar
     const btn = document.createElement('button');
     btn.className = 'btn-img-del';
     btn.innerHTML = '&times;';
     btn.onclick = () => removeImage(index);
-    
     div.appendChild(img);
     div.appendChild(btn);
     container.appendChild(div);
   });
-
   counter.textContent = `${appImages.length} / ${MAX_IMGS} imágenes`;
 }
 
@@ -911,16 +816,14 @@ function removeImage(index) {
   appImages.splice(index, 1);
   renderImages();
 }
-/* ====================================================== */
 
 /* ------------------ Save order (offline-first) ------------------ */
 async function save(){
   const saveBtn = document.getElementById('saveBtn');
-  
-  if (isSaving || saveBtn.disabled) return; // Control de concurrencia y visual
+  if (isSaving || saveBtn.disabled) return; 
 
   isSaving = true;
-  saveBtn.disabled = true; // Deshabilitar inmediatamente
+  saveBtn.disabled = true; 
 
   try {
     if (!appState.techId) {
@@ -931,12 +834,10 @@ async function save(){
     const cliNom = document.getElementById('cliNom').value.trim();
     if(!cliNom){ notif('Ingrese el nombre del cliente', 'err'); return; }
 
-    // 1. Construir el folio compuesto
     const folioActual = String(appState.folio).padStart(4,'0');
     const techPrefijo = String(appState.techId).padStart(2,'0');
-    const correlativoCompleto = techPrefijo + folioActual; // Ej: 010006
+    const correlativoCompleto = techPrefijo + folioActual; 
 
-    // Prepare client object & persist if new
     const cliData = {
       nombre: cliNom,
       rut: document.getElementById('cliRut').value.trim(),
@@ -948,7 +849,6 @@ async function save(){
     };
     await saveClienteIfNew(cliData);
 
-    // Collect repuestos
     const repInst = Array.from(document.querySelectorAll('#repInst .rep-row')).map(r => {
       return {
         nombre: (r.querySelector('.rep-nom')?.value || '').trim(),
@@ -962,12 +862,11 @@ async function save(){
       };
     }).filter(x => x.nombre);
 
-    // Trabajos
-    const trab = Array.from(document.querySelectorAll('#trabChk input:checked')).map(cb => cb.value);
+    // MODIFICACIÓN: Capturar el contenido del textarea 'trabRealizado' en lugar de checkboxes
+    // Ahora 'trab' será un String simple, no un Array.
+    const trab = document.getElementById('trabRealizado').value.trim();
 
-    // Equipo
     const orden = {
-      // Usamos el folio compuesto
       numero: correlativoCompleto, 
       fecha: document.getElementById('fecha').value || new Date().toISOString().split('T')[0],
       cliente: cliData,
@@ -981,56 +880,52 @@ async function save(){
         bn: document.getElementById('contBN').value || '0',
         color: document.getElementById('contColor').value || '0'
       },
-      repInst, repRet, trab,
+      repInst, repRet, trab, // 'trab' es ahora string
       obs: document.getElementById('obs').value.trim(),
       
-      // INTEGRACIÓN DE IMÁGENES
       imagenes: appImages, 
 
       extra: { 
         tecnico: appState.techName, 
         clienteFirma: document.getElementById('nomCliFirma').value.trim(),
-        idTecnico: appState.techId, // Guardamos el ID por si se necesita en el backend
-        folioTecnico: appState.folio // Guardamos el folio simple (ej: 6)
+        idTecnico: appState.techId, 
+        folioTecnico: appState.folio 
       }
     };
 
-    // Save reuso: add marca/modelo/repuestos to master lists
     if(orden.equipo.marca) await saveMarcaIfNew(orden.equipo.marca);
     if(orden.equipo.modelo) await saveModeloIfNew(orden.equipo.modelo);
     repInst.forEach(r => { if(r.nombre) saveRepIfNew(r.nombre); });
     repRet.forEach(r => { if(r.nombre) saveRepIfNew(r.nombre); });
 
-    // Save order to ordenesPend (offline queue)
     await dbAdd('ordenesPend', orden);
 
-    // Incremento y persistencia del número ESPECÍFICO DEL TÉCNICO
     appState.folio++;
     const newFolioKey = `folio_${appState.techId}`;
     await dbSet('config', { key: newFolioKey, value: appState.folio });
     
-    // Update UI
     renderNum();
-
     notif(`Orden N°${correlativoCompleto} guardada`, 'ok');
     renderPendingBadge();
     
-    // Limpiar campos (excepto fecha y técnico)
+    // Limpieza de campos
     document.querySelectorAll('input:not(#fecha):not(#nomTec):not(#num), textarea, select').forEach(i => {
       if(i.type === 'select-one') i.value = ''; else i.value = '';
     });
+    // Limpieza explícita del textarea (aunque lo anterior lo cubre, es bueno asegurar)
+    document.getElementById('trabRealizado').value = '';
+
     document.querySelectorAll('#repInst .rep-row, #repRet .rep-row').forEach((r, i) => { 
-      if (i > 0) r.remove(); // Deja solo la primera fila vacía
+      if (i > 0) r.remove(); 
       r.querySelectorAll('input').forEach(i => i.value = '');
     });
-    document.querySelectorAll('#trabChk input').forEach(c => c.checked = false);
-    updateTrab();
+    
+    // Reseteo del Select Helper
+    document.getElementById('trabHelper').value = '';
 
-    // LIMPIEZA DE IMÁGENES (NUEVO)
     appImages = [];
     renderImages();
 
-    // Try sync immediately if online
     if(navigator.onLine) await sync();
   
   } catch (e) {
@@ -1038,7 +933,7 @@ async function save(){
     notif('Error crítico al guardar. Consulte la consola.', 'err');
   } finally {
     isSaving = false;
-    saveBtn.disabled = false; // Re-habilitar el botón
+    saveBtn.disabled = false; 
   }
 }
 
@@ -1058,16 +953,16 @@ async function renderPendingBadge(){
 }
 
 async function sync(){
-  if(isSyncing) return; // Salir si ya hay una sincronización en curso
+  if(isSyncing) return; 
   if(!navigator.onLine) { notif('Sin conexión — pendiente', 'err'); return; }
   const pend = await dbGetAll('ordenesPend');
   if(pend.length === 0){ notif('No hay órdenes pendientes', 'ok'); return; }
 
-  isSyncing = true; // Establecer bandera
+  isSyncing = true; 
   showStatus('Sincronizando...');
   let successes = 0, failures = 0;
   
-  try { // Usar try/finally para garantizar que la bandera se restablezca
+  try { 
     for(const o of pend){
       try {
         const res = await fetch(URL, {
@@ -1089,7 +984,7 @@ async function sync(){
       }
     }
   } finally {
-    isSyncing = false; // Restablecer bandera
+    isSyncing = false; 
   }
 
   await renderPendingBadge();
@@ -1098,23 +993,19 @@ async function sync(){
   if(failures > 0) notif(`${failures} fallidas`, 'err');
 }
 
-/* Pull masters from Google Sheet (loadData) */
 async function syncServer(){
   if(!navigator.onLine) { showStatus('Offline'); return; }
   try {
     showStatus('Actualizando...');
-    // Enviamos el ID del técnico actual al servidor
     const r = await fetch(`${URL}?action=loadData&techId=${appState.techId || ''}`);
     const data = await r.json();
     if(!data.success){ showStatus('Sin datos server'); return; }
 
-    // 1. Cargar y actualizar técnicos
     if(Array.isArray(data.tecnicos)) { 
-      await dbDelAll('tecnicos'); // Limpiar para evitar duplicados si se actualizan IDs
+      await dbDelAll('tecnicos'); 
       for(const t of data.tecnicos) await dbSet('tecnicos', t); 
     }
     
-    // 2. Cargar otras listas
     if(Array.isArray(data.cli)) {
       for(const c of data.cli){
         if(!c || !c.nombre) continue;
@@ -1125,16 +1016,14 @@ async function syncServer(){
     if(Array.isArray(data.modelos)) for(const m of data.modelos) await dbSet('modelos',{nombre:m});
     if(Array.isArray(data.reps)) for(const r of data.reps) await dbSet('repuestos',{nombre:r});
     if(Array.isArray(data.servs)){
-      await dbDelAll('servicios'); // Limpiar la lista de servicios antes de volver a agregar
+      await dbDelAll('servicios'); 
       for(const s of data.servs) await dbAdd('servicios', { value: s });
     }
     
-    // 3. Corregir el correlativo específico del técnico actual
     if(appState.techId && data.lastNumTech){
         const serverNum = parseInt(data.lastNumTech, 10);
         const folioKey = `folio_${appState.techId}`;
         
-        // Si el número del servidor es válido y es mayor o igual al que tengo localmente
         if(!isNaN(serverNum) && serverNum >= appState.folio){
            appState.folio = serverNum + 1;
            await dbSet('config', { key: folioKey, value: appState.folio });
@@ -1152,17 +1041,13 @@ async function syncServer(){
   }
 }
 
-/* ------------------ Utilities ------------------ */
 function toggle(hdr){ const cnt = hdr.nextElementSibling; if(!cnt) return; cnt.style.display = (cnt.style.display === 'none' || cnt.style.display === '') ? 'block' : 'none'; }
 function escapeHtml(str){ if(!str) return ''; return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
 
-/* ------------------ Status & connectivity ------------------ */
 function updateStatus(){
-  // Solo actualiza el estado. La sincronización se maneja por eventos o por 'save()'
   if(navigator.onLine){ showStatus('Conectado'); } else { showStatus('Offline', true); }
 }
 
-/* ------------------ Small UX: autosave marca/modelo/repuesto on leave ------------------ */
 document.addEventListener('focusout', async (e) => {
   const t = e.target;
   if(t.id === 'eqMarca' && t.value.trim()) await saveMarcaIfNew(t.value.trim());
