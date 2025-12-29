@@ -381,13 +381,54 @@ async function initApp() {
     this.value = '';
   });
 
+  document.getElementById('imgInput').addEventListener('change', handleImageUpload);
+
   await syncServer();
   await loadLists();
   await loadServices();
+  await updateBadge();
   updateStatus();
 
-  // Nueva sección: Inicialización para manejo de imágenes
-  document.getElementById('imgInput').addEventListener('change', handleImageUpload);
+  // Enlazar botón de sincronización
+  document.getElementById('syncBtn').addEventListener('click', sync);
+}
+
+// Función para obtener todos los datos del formulario en un objeto consistente
+function buildOrderObject() {
+  return {
+    numero: document.getElementById('num').textContent,
+    fecha: document.getElementById('fecha').value,
+    cliente: {
+      nombre: document.getElementById('cliNom').value.trim(),
+      rut: document.getElementById('cliRut').value,
+      direccion: document.getElementById('cliDir').value,
+      ciudad: document.getElementById('cliCiu').value,
+      contacto: document.getElementById('cliCon').value,
+      telefono: document.getElementById('cliTel').value,
+      email: document.getElementById('cliMail').value
+    },
+    equipo: {
+      marca: document.getElementById('eqMarca').value,
+      modelo: document.getElementById('eqMod').value,
+      serie: document.getElementById('eqSer').value,
+      condicion: document.getElementById('eqCond').value
+    },
+    contadores: {
+      bn: parseInt(document.getElementById('contBN').value) || 0,
+      color: parseInt(document.getElementById('contColor').value) || 0
+    },
+    trabajo: document.getElementById('trabText').value,
+    observaciones: document.getElementById('obs').value,
+    imagenes: appImages,
+    firmas: {
+      tecnico: document.getElementById('nomTec').value,
+      cliente: document.getElementById('nomCliFirma').value
+    },
+    extra: {
+      tecnicoId: appState.techId,
+      tecnicoNombre: appState.techName
+    }
+  };
 }
 
 async function onClientSelect() {
@@ -446,6 +487,7 @@ function updateStatus() {
   const st = document.getElementById('statusTxt');
   st.textContent = navigator.onLine ? 'Conectado' : 'Offline';
   st.style.color = navigator.onLine ? 'inherit' : 'var(--danger)';
+  document.getElementById('syncBtn').style.display = navigator.onLine ? 'inline-block' : 'none';
 }
 
 async function syncServer() {
@@ -464,40 +506,68 @@ async function syncServer() {
 }
 
 async function save() {
-  if(isSaving) return;
+  if (isSaving) return;
   const cliNom = document.getElementById('cliNom').value.trim();
-  if(!cliNom || !appState.techId) { alert('Faltan datos críticos (Cliente o Técnico)'); return; }
+  if (!cliNom || !appState.techId) {
+    alert('Faltan datos críticos (Cliente o Técnico)');
+    return;
+  }
 
   isSaving = true;
-  const orden = {
-    numero: document.getElementById('num').textContent,
-    fecha: document.getElementById('fecha').value,
-    cliente: { 
-        nombre: cliNom, 
-        rut: document.getElementById('cliRut').value,
-        email: document.getElementById('cliMail').value 
-    },
-    trab: document.getElementById('trabText').value,
-    obs: document.getElementById('obs').value,
-    imagenes: appImages,
-    extra: { tecnico: appState.techName }
-  };
-
+  const orden = buildOrderObject();
   const tx = db.transaction('ordenesPend', 'readwrite');
-  tx.objectStore('ordenesPend').add(orden).onsuccess = () => {
+  tx.objectStore('ordenesPend').add(orden).onsuccess = async () => {
     alert('Orden guardada localmente');
     appState.folio++;
     renderNum();
-    if(navigator.onLine) sync();
+    await updateBadge();
+    if (navigator.onLine) sync();
     isSaving = false;
   };
 }
 
 async function sync() {
-    // Lógica simplificada de envío al Worker
+  if (isSyncing || !navigator.onLine) return;
+  isSyncing = true;
+
+  const tx = db.transaction('ordenesPend', 'readwrite');
+  const store = tx.objectStore('ordenesPend');
+  const cursorRequest = store.openCursor();
+
+  cursorRequest.onsuccess = async (e) => {
+    const cursor = e.target.result;
+    if (cursor) {
+      try {
+        const response = await fetch(URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cursor.value)
+        });
+        if (response.ok) {
+          cursor.delete();
+        }
+      } catch (error) {
+        console.error('Error en sync:', error);
+      }
+      cursor.continue();
+    } else {
+      await updateBadge();
+      isSyncing = false;
+    }
+  };
 }
 
-// Nueva sección: Funciones para manejo de imágenes
+// Función para actualizar el badge de pendientes
+async function updateBadge() {
+  const count = await new Promise(resolve => {
+    db.transaction('ordenesPend').objectStore('ordenesPend').count().onsuccess = e => resolve(e.target.result);
+  });
+  const badge = document.getElementById('badge');
+  badge.textContent = count;
+  badge.style.display = count > 0 ? 'inline-block' : 'none';
+}
+
+// Funciones para manejo de imágenes
 function handleImageUpload(event) {
   const files = event.target.files;
   let alertShown = false;
