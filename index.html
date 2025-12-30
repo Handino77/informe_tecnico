@@ -6,7 +6,6 @@
 <title>Orden de Servicio Técnico - Realtech SpA</title>
 <link rel="icon" href="logo_realtech.png" />
 <style>
-  /* --------- Diseño base responsive --------- */
   :root{
     --blue: #004a99;
     --blue-dark: #003370;
@@ -70,7 +69,6 @@
   .meta .fecha { font-size: 13px; color: var(--sub); display: flex; flex-direction: column; align-items: flex-end; }
   .meta .fecha input { text-align: right; padding: 4px; border: none; background: transparent; font-weight: 600; color: var(--sub); }
 
-  /* Grid General para otras secciones */
   .grid, .grid-eq {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -79,7 +77,6 @@
     align-items: end;
   }
 
-  /* NUEVO: Grid optimizado para Información del Cliente */
   .grid-cliente {
     display: grid;
     grid-template-columns: 2fr 1fr; 
@@ -124,38 +121,7 @@
     text-transform: uppercase;
   }
 
-  .btn-section-add {
-    background: #fff;
-    border: 1px solid var(--border);
-    color: var(--blue);
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 14px;
-    width: 100%;
-    margin-top: 15px;
-  }
-
   .exp { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; }
-  
-  .rep-row {
-    display: grid;
-    grid-template-columns: 1fr 140px 40px;
-    gap: 10px;
-    align-items: end;
-    margin-bottom: 12px;
-    background: #fff;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-  }
-  .btn-del {
-    background: #fee2e2; color: var(--danger);
-    border: none; border-radius: 6px;
-    height: 42px; width: 100%;
-    font-weight: bold; cursor: pointer;
-  }
 
   .footer { margin-top: 30px; border-top: 2px solid var(--muted); padding-top: 20px; }
   .firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
@@ -191,12 +157,33 @@
     border: 1px solid var(--border);
   }
 
-  .img-thumb-container { position: relative; width: 100px; height: 100px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .img-thumb-container { 
+    position: relative; 
+    width: 100px; 
+    height: 100px; 
+    border-radius: 8px; 
+    overflow: hidden; 
+    border: 1px solid var(--border); 
+    display: inline-block;
+  }
   .img-thumb-container img { width: 100%; height: 100%; object-fit: cover; }
-  .btn-img-del { position: absolute; top: 4px; right: 4px; background: rgba(229, 62, 62, 0.9); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; }
+  .btn-img-del { 
+    position: absolute; 
+    top: 4px; 
+    right: 4px; 
+    background: rgba(229, 62, 62, 0.9); 
+    color: white; 
+    border: none; 
+    width: 22px; 
+    height: 22px; 
+    border-radius: 50%; 
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+  }
 
   @media print {
-    .no-print, .controls, .statusbar, .btn-section-add, #imgInput, .btn-img-del, .btn-del { display: none !important; }
+    .no-print, .controls, .statusbar, #imgInput, .btn-img-del { display: none !important; }
     body, .container { background: #fff; margin: 0; padding: 0; box-shadow: none; width: 100%; }
     textarea, input { border: none !important; resize: none; overflow: hidden; }
   }
@@ -221,8 +208,8 @@
   <header>
     <div class="logo"><img src="logo_realtech.png" alt="Realtech" onerror="this.style.display='none'"></div>
     <div class="brand">
-      <h1>Realtech SpA — Orden de Servicio Técnico</h1>
-      <p>RUT: 77.651.114-5 — Arturo Prat 780 of 203A, Temuco</p>
+      <h1>Realtech SpA – Orden de Servicio Técnico</h1>
+      <p>RUT: 77.651.114-5 – Arturo Prat 780 of 203A, Temuco</p>
     </div>
     <div class="meta">
       <div class="num" id="num">N° XXXX</div> 
@@ -232,8 +219,7 @@
 
   <section>
     <div class="section-title"><h2>Información del Cliente</h2></div>
-    <div class="grid-cliente" role="form" aria-label="Información del cliente">
-      
+    <div class="grid-cliente">
       <div>
         <label for="cliNom">Cliente / Empresa</label>
         <input type="text" id="cliNom" list="cli-list" placeholder="Nombre del cliente..." autocomplete="off">
@@ -242,7 +228,6 @@
         <label for="cliRut">RUT</label>
         <input type="text" id="cliRut" placeholder="XX.XXX.XXX-X">
       </div>
-
       <div>
         <label for="cliDir">Dirección</label>
         <input type="text" id="cliDir" placeholder="Dirección">
@@ -251,7 +236,6 @@
         <label for="cliCiu">Ciudad</label>
         <input type="text" id="cliCiu" placeholder="Ciudad">
       </div>
-
       <div>
         <label for="cliCon">Contacto</label>
         <input type="text" id="cliCon" placeholder="Atención a...">
@@ -260,12 +244,10 @@
         <label for="cliTel">Teléfono</label>
         <input type="text" id="cliTel" placeholder="+56 9 ...">
       </div>
-
       <div class="full-width">
         <label for="cliMail">Email</label>
         <input type="text" id="cliMail" placeholder="correo@ejemplo.com">
       </div>
-      
     </div>
   </section>
 
@@ -311,7 +293,7 @@
 
   <section>
     <div class="section-title"><h2>Evidencia Fotográfica</h2></div>
-    <input type="file" id="imgInput" accept="image/*" multiple>
+    <input type="file" id="imgInput" accept="image/*" multiple class="no-print">
     <div id="imgCounter" style="font-size:13px;color:#64748b;margin-bottom:8px">0 / 8 imágenes</div>
     <div id="imgPreview" style="display:flex;flex-wrap:wrap;gap:10px"></div>
     <canvas id="imgCanvas" style="display:none"></canvas>
@@ -344,15 +326,16 @@
 </div>
 
 <script>
-/* LÓGICA DE PROGRAMACIÓN (IndexedDB, Sync, Image Compression, etc.) */
-const URL = 'https://informes-realtech.realtech-spa.workers.dev/';
+const URL = 'https://informes-realtech.realtech-spa.workers.dev';
+const MAX_IMAGES = 8;
+const MAX_IMAGE_SIZE = 1024;
 let db = null;
 let appState = { folio: 1, techId: null, techName: null };
 let appImages = [];
 let isSaving = false;
 let isSyncing = false;
 
-// Inicialización de DB
+// Inicialización IndexedDB
 const req = indexedDB.open('RealtechDB', 4);
 req.onsuccess = (e) => { db = e.target.result; initApp(); };
 req.onupgradeneeded = (e) => {
@@ -370,8 +353,8 @@ async function initApp() {
   document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
   document.getElementById('nomTec').addEventListener('change', onTechSelect);
   document.getElementById('cliNom').addEventListener('change', onClientSelect);
+  document.getElementById('imgInput').addEventListener('change', handleImageUpload);
   
-  // Lógica de inserción rápida de trabajo
   document.getElementById('trabSelect').addEventListener('change', function() {
     if(!this.value) return;
     const textArea = document.getElementById('trabText');
@@ -384,7 +367,13 @@ async function initApp() {
   await syncServer();
   await loadLists();
   await loadServices();
+  await updatePendingCount();
   updateStatus();
+  
+  window.addEventListener('online', () => { updateStatus(); syncPendingOrders(); });
+  window.addEventListener('offline', updateStatus);
+  
+  document.getElementById('syncBtn').addEventListener('click', syncPendingOrders);
 }
 
 async function onClientSelect() {
@@ -445,6 +434,23 @@ function updateStatus() {
   st.style.color = navigator.onLine ? 'inherit' : 'var(--danger)';
 }
 
+async function updatePendingCount() {
+  const tx = db.transaction('ordenesPend', 'readonly');
+  tx.objectStore('ordenesPend').count().onsuccess = (e) => {
+    const count = e.target.result;
+    const badge = document.getElementById('badge');
+    const syncBtn = document.getElementById('syncBtn');
+    if(count > 0) {
+      badge.textContent = count;
+      badge.style.display = 'inline-block';
+      syncBtn.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+      syncBtn.style.display = 'none';
+    }
+  };
+}
+
 async function syncServer() {
   if(!navigator.onLine) return;
   try {
@@ -457,43 +463,228 @@ async function syncServer() {
       tx.objectStore('servicios').clear();
       d.servs.forEach(s => tx.objectStore('servicios').add({value: s}));
     }
-  } catch(e) { console.error(e); }
+  } catch(e) { 
+    console.error('Error sync server:', e); 
+  }
+}
+
+// MANEJO DE IMÁGENES
+async function handleImageUpload(e) {
+  const files = Array.from(e.target.files);
+  if(appImages.length + files.length > MAX_IMAGES) {
+    alert(`Máximo ${MAX_IMAGES} imágenes permitidas`);
+    return;
+  }
+  
+  for(const file of files) {
+    if(!file.type.startsWith('image/')) continue;
+    const compressed = await compressImage(file);
+    appImages.push(compressed);
+  }
+  
+  renderImagePreviews();
+  e.target.value = '';
+}
+
+async function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.getElementById('imgCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width = img.width;
+        let height = img.height;
+        
+        if(width > MAX_IMAGE_SIZE || height > MAX_IMAGE_SIZE) {
+          if(width > height) {
+            height = (height / width) * MAX_IMAGE_SIZE;
+            width = MAX_IMAGE_SIZE;
+          } else {
+            width = (width / height) * MAX_IMAGE_SIZE;
+            height = MAX_IMAGE_SIZE;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const base64 = canvas.toDataURL('image/jpeg', 0.8);
+        resolve(base64);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderImagePreviews() {
+  const preview = document.getElementById('imgPreview');
+  const counter = document.getElementById('imgCounter');
+  
+  counter.textContent = `${appImages.length} / ${MAX_IMAGES} imágenes`;
+  
+  preview.innerHTML = appImages.map((img, idx) => `
+    <div class="img-thumb-container">
+      <img src="${img}" alt="Imagen ${idx + 1}">
+      <button class="btn-img-del no-print" onclick="removeImage(${idx})">×</button>
+    </div>
+  `).join('');
+}
+
+function removeImage(idx) {
+  appImages.splice(idx, 1);
+  renderImagePreviews();
 }
 
 async function save() {
   if(isSaving) return;
+  
   const cliNom = document.getElementById('cliNom').value.trim();
-  if(!cliNom || !appState.techId) { alert('Faltan datos críticos (Cliente o Técnico)'); return; }
+  const trabText = document.getElementById('trabText').value.trim();
+  
+  if(!cliNom) {
+    alert('Debe ingresar el nombre del cliente');
+    return;
+  }
+  
+  if(!appState.techId) {
+    alert('Debe seleccionar un técnico');
+    return;
+  }
+  
+  if(!trabText) {
+    alert('Debe describir el trabajo realizado');
+    return;
+  }
 
   isSaving = true;
+  document.getElementById('saveBtn').textContent = 'Guardando...';
+  
   const orden = {
     numero: document.getElementById('num').textContent,
     fecha: document.getElementById('fecha').value,
     cliente: { 
-        nombre: cliNom, 
-        rut: document.getElementById('cliRut').value,
-        email: document.getElementById('cliMail').value 
+      nombre: cliNom, 
+      rut: document.getElementById('cliRut').value,
+      direccion: document.getElementById('cliDir').value,
+      ciudad: document.getElementById('cliCiu').value,
+      contacto: document.getElementById('cliCon').value,
+      telefono: document.getElementById('cliTel').value,
+      email: document.getElementById('cliMail').value 
     },
-    trab: document.getElementById('trabText').value,
-    obs: document.getElementById('obs').value,
+    equipo: {
+      marca: document.getElementById('eqMarca').value,
+      modelo: document.getElementById('eqMod').value,
+      serie: document.getElementById('eqSer').value,
+      condicion: document.getElementById('eqCond').value,
+      contadorBN: document.getElementById('contBN').value,
+      contadorColor: document.getElementById('contColor').value
+    },
+    trabajo: trabText,
+    observaciones: document.getElementById('obs').value,
     imagenes: appImages,
-    extra: { tecnico: appState.techName }
+    firmas: {
+      tecnico: document.getElementById('nomTec').value,
+      cliente: document.getElementById('nomCliFirma').value
+    },
+    timestamp: new Date().toISOString()
   };
 
-  const tx = db.transaction('ordenesPend', 'readwrite');
-  tx.objectStore('ordenesPend').add(orden).onsuccess = () => {
+  try {
+    const tx = db.transaction('ordenesPend', 'readwrite');
+    await new Promise((resolve, reject) => {
+      const req = tx.objectStore('ordenesPend').add(orden);
+      req.onsuccess = resolve;
+      req.onerror = reject;
+    });
+    
     alert('Orden guardada localmente');
     appState.folio++;
     renderNum();
-    if(navigator.onLine) sync();
+    clearForm();
+    await updatePendingCount();
+    
+    if(navigator.onLine) {
+      setTimeout(() => syncPendingOrders(), 500);
+    }
+  } catch(e) {
+    console.error('Error al guardar:', e);
+    alert('Error al guardar la orden');
+  } finally {
     isSaving = false;
-  };
+    document.getElementById('saveBtn').textContent = 'GUARDAR';
+  }
 }
 
-async function sync() {
-    // Lógica simplificada de envío al Worker
+function clearForm() {
+  document.getElementById('trabText').value = '';
+  document.getElementById('obs').value = '';
+  document.getElementById('nomCliFirma').value = '';
+  document.getElementById('contBN').value = '';
+  document.getElementById('contColor').value = '';
+  appImages = [];
+  renderImagePreviews();
 }
 
+async function syncPendingOrders() {
+  if(isSyncing || !navigator.onLine) return;
+  
+  isSyncing = true;
+  const syncBtn = document.getElementById('syncBtn');
+  syncBtn.textContent = 'Sincronizando...';
+  
+  try {
+    const tx = db.transaction('ordenesPend', 'readonly');
+    const ordenes = await new Promise((resolve, reject) => {
+      const req = tx.objectStore('ordenesPend').getAll();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = reject;
+    });
+    
+    if(ordenes.length === 0) {
+      await updatePendingCount();
+      return;
+    }
+    
+    for(const orden of ordenes) {
+      try {
+        const response = await fetch(URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'saveOrden',
+            data: orden
+          })
+        });
+        
+        const result = await response.json();
+        
+        if(result.success) {
+          const txDel = db.transaction('ordenesPend', 'readwrite');
+          txDel.objectStore('ordenesPend').delete(orden.id);
+        }
+      } catch(e) {
+        console.error('Error al sincronizar orden:', e);
+      }
+    }
+    
+    await updatePendingCount();
+    alert('Órdenes sincronizadas correctamente');
+    
+  } catch(e) {
+    console.error('Error en sincronización:', e);
+    alert('Error al sincronizar órdenes');
+  } finally {
+    isSyncing = false;
+    syncBtn.textContent = 'Sincronizar';
+  }
+}
 </script>
 </body>
 </html>
