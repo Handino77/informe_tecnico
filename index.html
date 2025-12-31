@@ -455,7 +455,7 @@ async function updatePendingCount() {
 async function syncServer() {
   if(!navigator.onLine) return;
   try {
-    const r = await fetch(`${URL}?action=loadData`);
+    const r = await fetch(GAS_URL + '?action=loadData');
     const d = await r.json();
     if(d.success) {
       const tx = db.transaction(['clientes', 'tecnicos', 'servicios', 'marcas', 'modelos'], 'readwrite');
@@ -655,7 +655,7 @@ async function syncPendingOrders() {
     
     for(const orden of ordenes) {
       try {
-        const response = await fetch(URL, {
+        const response = await fetch(WORKER_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
