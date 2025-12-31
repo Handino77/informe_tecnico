@@ -326,29 +326,86 @@
 </div>
 
 <script>
+// === URLs CORRECTAS PARA QUE TODO FUNCIONE ===
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzZkp-oX5hzqenXPrx_AuzDg2THUGChwCUU8OcW75YGLpm8lIJnDYfz0ibuIZs4WqE3/exec';
 const WORKER_URL = 'https://informes-realtech.realtech-spa.workers.dev/';
-const MAX_IMAGES = 8;
-const MAX_IMAGE_SIZE = 1024;
-let db = null;
-let appState = { folio: 1, techId: null, techName: null };
-let appImages = [];
-let isSaving = false;
-let isSyncing = false;
 
-// Inicialización IndexedDB
-const req = indexedDB.open('RealtechDB', 4);
-req.onsuccess = (e) => { db = e.target.result; initApp(); };
-req.onupgradeneeded = (e) => {
-  const idb = e.target.result;
-  if (!idb.objectStoreNames.contains('clientes')) idb.createObjectStore('clientes', { keyPath: 'nombre' });
-  if (!idb.objectStoreNames.contains('marcas')) idb.createObjectStore('marcas', { keyPath: 'nombre' });
-  if (!idb.objectStoreNames.contains('modelos')) idb.createObjectStore('modelos', { keyPath: 'nombre' });
-  if (!idb.objectStoreNames.contains('servicios')) idb.createObjectStore('servicios', { keyPath: 'id', autoIncrement: true });
-  if (!idb.objectStoreNames.contains('ordenesPend')) idb.createObjectStore('ordenesPend', { keyPath: 'id', autoIncrement: true });
-  if (!idb.objectStoreNames.contains('config')) idb.createObjectStore('config', { keyPath: 'key' });
-  if (!idb.objectStoreNames.contains('tecnicos')) idb.createObjectStore('tecnicos', { keyPath: 'id' });
-};
+// Carga clientes, marcas, modelos, técnicos desde la planilla
+async function syncServer() {
+  if (!navigator.onLine) return;
+  try {
+    const r = await fetch(GAS_URL + '?action=loadData');
+    const d = await r.json();
+    if (d.success) {
+      const tx = db.transaction(['clientes', 'tecnicos', 'servicios', 'marcas', 'modelos'], 'readwrite');
+      d.cli.forEach(c => tx.objectStore('clientes').put(c));
+      d.tecnicos.forEach(t => tx.objectStore('tecnicos').put(t));
+      tx.objectStore('servicios').clear();
+      d.servs.forEach(s => tx.objectStore('servicios').add({value: s}));
+      d.marcas.forEach(m => tx.objectStore('marcas').put({nombre: m}));
+      d.modelos.forEach(m => tx.objectStore('modelos').put({nombre: m}));
+      await tx.done;
+      loadLists(); // Recarga los datalists
+    }
+  } catch(e) { 
+    console.error('Error cargando datos:', e); 
+  }
+}
+
+// Sincroniza órdenes pendientes (usa el Worker para evitar problemas CORS)
+async function syncPendingOrders() {
+  if (isSyncing || !navigator.onLine) return;
+  
+  isSyncing = true;
+  const syncBtn = document.getElementById('syncBtn');
+  syncBtn.textContent = 'Sincronizando...';
+  
+  try {
+    const tx = db.transaction('ordenesPend', 'readonly');
+    const ordenes = await new Promise((resolve, reject) => {
+      const req = tx.objectStore('ordenesPend').getAll();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = reject;
+    });
+    
+    if (ordenes.length === 0) {
+      await updatePendingCount();
+      return;
+    }
+    
+    for (const orden of ordenes) {
+      try {
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'saveOrden',
+            data: orden
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          const txDel = db.transaction('ordenesPend', 'readwrite');
+          await txDel.objectStore('ordenesPend').delete(orden.id);
+        }
+      } catch(e) {
+        console.error('Error al sincronizar orden:', e);
+      }
+    }
+    
+    await updatePendingCount();
+    alert('Órdenes sincronizadas correctamente');
+    
+  } catch(e) {
+    console.error('Error en sincronización:', e);
+    alert('Error al sincronizar órdenes');
+  } finally {
+    isSyncing = false;
+    syncBtn.textContent = 'Sincronizar';
+  }
+}
 
 async function initApp() {
   document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
