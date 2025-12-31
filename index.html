@@ -338,17 +338,29 @@ async function syncServer() {
     const d = await r.json();
     if (d.success) {
       const tx = db.transaction(['clientes', 'tecnicos', 'servicios', 'marcas', 'modelos'], 'readwrite');
-      d.cli.forEach(c => tx.objectStore('clientes').put(c));
-      d.tecnicos.forEach(t => tx.objectStore('tecnicos').put(t));
-      tx.objectStore('servicios').clear();
+      // Limpiar antes de cargar
+      await tx.objectStore('clientes').clear();
+      await tx.objectStore('marcas').clear();
+      await tx.objectStore('modelos').clear();
+      await tx.objectStore('tecnicos').clear();
+      await tx.objectStore('servicios').clear();
+      // Cargar clientes
+      d.cli.forEach(c => tx.objectStore('clientes').add(c));
+      // Cargar marcas
+      d.marcas.forEach(m => tx.objectStore('marcas').add({nombre: m}));
+      // Cargar modelos
+      d.modelos.forEach(m => tx.objectStore('modelos').add({nombre: m}));
+      // Cargar técnicos
+      d.tecnicos.forEach(t => tx.objectStore('tecnicos').add(t));
+      // Cargar servicios
       d.servs.forEach(s => tx.objectStore('servicios').add({value: s}));
-      d.marcas.forEach(m => tx.objectStore('marcas').put({nombre: m}));
-      d.modelos.forEach(m => tx.objectStore('modelos').put({nombre: m}));
       await tx.done;
-      loadLists(); // Recarga los datalists
+      // Actualizar los desplegables
+      loadLists();
+      console.log('Datos cargados correctamente desde la planilla');
     }
-  } catch(e) { 
-    console.error('Error cargando datos:', e); 
+  } catch(e) {
+    console.error('Error cargando datos:', e);
   }
 }
 
@@ -510,19 +522,35 @@ async function updatePendingCount() {
 }
 
 async function syncServer() {
-  if(!navigator.onLine) return;
+  if (!navigator.onLine) return;
   try {
     const r = await fetch(GAS_URL + '?action=loadData');
     const d = await r.json();
-    if(d.success) {
+    if (d.success) {
       const tx = db.transaction(['clientes', 'tecnicos', 'servicios', 'marcas', 'modelos'], 'readwrite');
-      d.cli.forEach(c => tx.objectStore('clientes').put(c));
-      d.tecnicos.forEach(t => tx.objectStore('tecnicos').put(t));
-      tx.objectStore('servicios').clear();
+      // Limpiar antes de cargar
+      await tx.objectStore('clientes').clear();
+      await tx.objectStore('marcas').clear();
+      await tx.objectStore('modelos').clear();
+      await tx.objectStore('tecnicos').clear();
+      await tx.objectStore('servicios').clear();
+      // Cargar clientes
+      d.cli.forEach(c => tx.objectStore('clientes').add(c));
+      // Cargar marcas
+      d.marcas.forEach(m => tx.objectStore('marcas').add({nombre: m}));
+      // Cargar modelos
+      d.modelos.forEach(m => tx.objectStore('modelos').add({nombre: m}));
+      // Cargar técnicos
+      d.tecnicos.forEach(t => tx.objectStore('tecnicos').add(t));
+      // Cargar servicios
       d.servs.forEach(s => tx.objectStore('servicios').add({value: s}));
+      await tx.done;
+      // Actualizar los desplegables
+      loadLists();
+      console.log('Datos cargados correctamente desde la planilla');
     }
-  } catch(e) { 
-    console.error('Error sync server:', e); 
+  } catch(e) {
+    console.error('Error cargando datos:', e);
   }
 }
 
@@ -743,6 +771,7 @@ async function syncPendingOrders() {
     syncBtn.textContent = 'Sincronizar';
   }
 }
+initApp();
 </script>
 </body>
 </html>
