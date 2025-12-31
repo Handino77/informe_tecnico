@@ -330,37 +330,56 @@
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzZkp-oX5hzqenXPrx_AuzDg2THUGChwCUU8OcW75YGLpm8lIJnDYfz0ibuIZs4WqE3/exec';
 const WORKER_URL = 'https://informes-realtech.realtech-spa.workers.dev/';
 
-// Carga clientes, marcas, modelos, técnicos desde la planilla
+// Carga clientes, marcas, modelos, técnicos desde la planilla usando el Worker
 async function syncServer() {
-  if (!navigator.onLine) return;
+  if (!navigator.onLine) {
+    alert('Sin conexión a internet');
+    return;
+  }
+  
+  const syncBtn = document.getElementById('syncBtn');
   try {
-    const r = await fetch(GAS_URL + '?action=loadData');
+    if (syncBtn) {
+      syncBtn.disabled = true;
+      syncBtn.textContent = 'Sincronizando...';
+    }
+
+    // Usamos WORKER_URL para saltar el bloqueo de seguridad (CORS)
+    const r = await fetch(WORKER_URL + '?action=loadData');
     const d = await r.json();
+
     if (d.success) {
       const tx = db.transaction(['clientes', 'tecnicos', 'servicios', 'marcas', 'modelos'], 'readwrite');
-      // Limpiar antes de cargar
-      await tx.objectStore('clientes').clear();
-      await tx.objectStore('marcas').clear();
-      await tx.objectStore('modelos').clear();
-      await tx.objectStore('tecnicos').clear();
-      await tx.objectStore('servicios').clear();
-      // Cargar clientes
+      
+      // Limpiar datos antiguos para evitar duplicados o errores
+      tx.objectStore('clientes').clear();
+      tx.objectStore('marcas').clear();
+      tx.objectStore('modelos').clear();
+      tx.objectStore('tecnicos').clear();
+      tx.objectStore('servicios').clear();
+
+      // Cargar datos nuevos
       d.cli.forEach(c => tx.objectStore('clientes').add(c));
-      // Cargar marcas
       d.marcas.forEach(m => tx.objectStore('marcas').add({nombre: m}));
-      // Cargar modelos
       d.modelos.forEach(m => tx.objectStore('modelos').add({nombre: m}));
-      // Cargar técnicos
       d.tecnicos.forEach(t => tx.objectStore('tecnicos').add(t));
-      // Cargar servicios
       d.servs.forEach(s => tx.objectStore('servicios').add({value: s}));
+
       await tx.done;
-      // Actualizar los desplegables
+      
+      // Actualizar los menús desplegables del formulario
       loadLists();
-      console.log('Datos cargados correctamente desde la planilla');
+      
+      alert('¡Sincronización exitosa! Los datos están listos.');
     }
   } catch(e) {
     console.error('Error cargando datos:', e);
+    alert('Error al sincronizar. Asegúrate de haber publicado el Script de Google como Aplicación Web.');
+  } finally {
+    if (syncBtn) {
+      syncBtn.disabled = false;
+      syncBtn.textContent = 'Sincronizar Datos';
+    }
   }
 }
 
